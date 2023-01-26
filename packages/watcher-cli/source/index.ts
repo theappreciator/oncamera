@@ -1,6 +1,6 @@
 import bonjour from 'bonjour';
 import chalk from 'chalk';
-import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylight.js';
+import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylight';
 
 
 
