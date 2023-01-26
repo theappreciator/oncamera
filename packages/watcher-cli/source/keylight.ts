@@ -1,13 +1,8 @@
 import chalk from 'chalk';
+import { ElgatoLight } from './types';
+import { delay, getUrlFromLight } from './utils';
 
-function delay(t: any, v?: any) {
-  return new Promise(resolve => setTimeout(resolve, t, v));
-}
 
-function getLightUrl(keylightService: { ip: string, port: number }) {
-  const keylightUrl = `http://${keylightService.ip}:${keylightService.port}/elgato/lights`;
-  return keylightUrl;
-}
 
 async function getKeylight(url: string) {
   const data = await fetch(url);
@@ -50,15 +45,15 @@ async function turnLightOn(url: string) {
   return await data.json();
 }
 
-export async function toggleKeyLight(keylightService: { ip: string, port: number }) {
+export async function toggleKeyLight(light: ElgatoLight) {
 
-  const keylightUrl = getLightUrl(keylightService);
+  const keylightUrl = getUrlFromLight(light);
 
   const keyLight = await getKeylight(keylightUrl);
-  const light = keyLight.lights[0];
+  const lightStatus = keyLight.lights[0];
 
   try {
-    const returnVal = light.on ? await turnLightOff(keylightUrl) : await turnLightOn(keylightUrl);
+    const returnVal = lightStatus.on ? await turnLightOff(keylightUrl) : await turnLightOn(keylightUrl);
     return returnVal;
   }
   catch (e) {
@@ -66,52 +61,40 @@ export async function toggleKeyLight(keylightService: { ip: string, port: number
   }
 }
 
-export async function turnOnKeyLight(keylightService: { ip: string, port: number }) {
-  const keylightUrl = getLightUrl(keylightService);
+export async function turnOnKeyLight(light: ElgatoLight) {
+  const keylightUrl = getUrlFromLight(light);
   const returnVal = turnLightOn(keylightUrl);
   return returnVal;
 }
 
-export async function turnOffKeyLight(keylightService: { ip: string, port: number }) {
-  const keylightUrl = getLightUrl(keylightService);
+export async function turnOffKeyLight(light: ElgatoLight) {
+  const keylightUrl = getUrlFromLight(light);
   const returnVal = turnLightOff(keylightUrl);
   return returnVal;
 }
 
-export async function flashKeyLight(keylightService: any) {
-  const turnedOn = turnOnKeyLight({
-    ip: keylightService.referer.address,
-    port: keylightService.port
-  });
+export async function flashKeyLight(light: ElgatoLight) {
+  const turnedOn = turnOnKeyLight(light);
 
   turnedOn.then(() => {
-    console.log("Turned on:", keylightService.host, new Date());
+    console.log("Turned on:", light.host, new Date());
 
     return delay(500).then(() => {
-      console.log("Turning off", keylightService.host, new Date());
-      return turnOffKeyLight({
-        ip: keylightService.referer.address,
-        port: keylightService.port
-      });
+      console.log("Turning off", light.host, new Date());
+      return turnOffKeyLight(light);
     });
   }).then(() => {
-    console.log("Turned off", keylightService.host, new Date());
+    console.log("Turned off", light.host, new Date());
 
     return delay(350).then(() => {
-      return turnOnKeyLight({
-        ip: keylightService.referer.address,
-        port: keylightService.port
-      });
+      return turnOnKeyLight(light);
     });
   }).then(() => {
-    console.log("Turned on:", keylightService.host, new Date());
+    console.log("Turned on:", light.host, new Date());
 
     return delay(500).then(() => {
-      console.log("Turning off", keylightService.host, new Date());
-      return turnOffKeyLight({
-        ip: keylightService.referer.address,
-        port: keylightService.port
-      });
+      console.log("Turning off", light.host, new Date());
+      return turnOffKeyLight(light);
     });
   });
 
