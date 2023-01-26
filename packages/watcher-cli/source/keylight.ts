@@ -1,20 +1,20 @@
 import chalk from 'chalk';
 
-function delay(t, v) {
+function delay(t: any, v?: any) {
   return new Promise(resolve => setTimeout(resolve, t, v));
 }
 
-function getLightUrl(keylightService) {
+function getLightUrl(keylightService: { ip: string, port: number }) {
   const keylightUrl = `http://${keylightService.ip}:${keylightService.port}/elgato/lights`;
   return keylightUrl;
 }
 
-async function getKeylight(url) {
+async function getKeylight(url: string) {
   const data = await fetch(url);
   return await data.json();
 }
 
-async function turnLightOff(url) {
+async function turnLightOff(url: string) {
   console.log(chalk.yellow("turning off", url));
   const data = await fetch(url,{
     method: "PUT",
@@ -32,7 +32,7 @@ async function turnLightOff(url) {
   return await data.json();
 }
 
-async function turnLightOn(url) {
+async function turnLightOn(url: string) {
   console.log(chalk.yellow("turning on", url));
   const data = await fetch(url,{
     method: "PUT",
@@ -50,11 +50,7 @@ async function turnLightOn(url) {
   return await data.json();
 }
 
-async function flashLight(url) {
-  
-}
-
-export async function toggleKeyLight(keylightService) {
+export async function toggleKeyLight(keylightService: { ip: string, port: number }) {
 
   const keylightUrl = getLightUrl(keylightService);
 
@@ -68,23 +64,21 @@ export async function toggleKeyLight(keylightService) {
   catch (e) {
     console.log("Error toggling", keylightUrl);
   }
-
-  return returnVal;
 }
 
-export async function turnOnKeyLight(keylightService) {
+export async function turnOnKeyLight(keylightService: { ip: string, port: number }) {
   const keylightUrl = getLightUrl(keylightService);
   const returnVal = turnLightOn(keylightUrl);
   return returnVal;
 }
 
-export async function turnOffKeyLight(keylightService) {
+export async function turnOffKeyLight(keylightService: { ip: string, port: number }) {
   const keylightUrl = getLightUrl(keylightService);
   const returnVal = turnLightOff(keylightUrl);
   return returnVal;
 }
 
-export async function flashKeyLight(keylightService) {
+export async function flashKeyLight(keylightService: any) {
   const turnedOn = turnOnKeyLight({
     ip: keylightService.referer.address,
     port: keylightService.port
