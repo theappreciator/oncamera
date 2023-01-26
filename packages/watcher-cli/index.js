@@ -2,10 +2,31 @@ import bonjour from 'bonjour';
 import chalk from 'chalk';
 import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylight.js';
 
+
+
 const bonjourService = bonjour();
 const browser = bonjourService.find({ type: 'elg' });
 
-const url = "http://10.0.0.148:9124/api/webcam/status";
+
+let url = "http://10.0.0.148:9124/api/webcam/status";
+// const webcamStatusBrowser = bonjourService.find({ type: "jtu"});
+// const webcamStatusBrowserInterval = setInterval(() => {
+//   webcamStatusBrowser.update();
+// }, 5000);
+
+// webcamStatusBrowser.on("up", (service) => {
+//   console.log(chalk.bgRed.black.bold("Found a new JTU SERVICE!"));
+//   console.log(service.host, service.referer.address, service.port);
+
+//   if (service.referer.address && service.port) {
+//     url = "http://" + service.referer.address + ":" + service.port + "/api/webcam/status"
+//   }
+// });
+
+
+
+
+
 let lastStatus = "webcam.status.offline";
 let errorCount = 0;
 let showReconnect = false;
@@ -22,6 +43,10 @@ const bonjourServiceInterval = setInterval(() => {
 
 const webcamStatusInterval = setInterval(async () => {
   
+  if (!url) {
+    return;
+  }
+
   const data = await fetch(url)
   .then((response) => {
     showReconnect = errorCount > 0 ? true : false;
