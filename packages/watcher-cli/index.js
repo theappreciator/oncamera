@@ -8,6 +8,7 @@ const browser = bonjourService.find({ type: 'elg' });
 const url = "http://10.0.0.148:9124/api/webcam/status";
 let lastStatus = "webcam.status.offline";
 let errorCount = 0;
+let showReconnect = false;
 
 const bonjourServiceInterval = setInterval(() => {
   // console.log("");
@@ -21,7 +22,11 @@ const bonjourServiceInterval = setInterval(() => {
 
 const webcamStatusInterval = setInterval(async () => {
   
-  const data = await fetch(url).catch(e => {
+  const data = await fetch(url)
+  .then((response) => {
+    showReconnect = errorCount > 0 ? true : false;
+    return response;
+  }).catch(e => {
     errorCount++;
 
     // only report out when >0 and divisble by 5
@@ -29,15 +34,28 @@ const webcamStatusInterval = setInterval(async () => {
       console.log("Having trouble connecting to " + url + ".  Tried " + errorCount + " times");
     }
   });
+
+  if (showReconnect) {
+    console.log("Re-connected to " + url + " after " + errorCount + " failed attempts");
+    showReconnect = false;
+    errorCount = 0;
+  }
+
+  // return early if there errors
+  if (errorCount > 0) {
+    return;
+  }
+
   const json = await data?.json();
-  const newStatus = json?.status || 'webcam.status.offline';
+
+  if (!json?.status) {
+    console.log("Error getting json from " + url + ":", json);
+    return;
+  }
+
+  const newStatus = json?.status || 'webcam.status.offline';  
 
   if (lastStatus !== newStatus && (newStatus === "webcam.status.online" || newStatus === "webcam.status.offline")) {
-    
-    if (errorCount) {
-      console.log("Re-connected to " + url + " after " + errorCount + " failed attempts");
-      errorCount = 0; // reset error counter
-    }
     
     if (newStatus === "webcam.status.online") {
       browser.services.forEach(s => {
