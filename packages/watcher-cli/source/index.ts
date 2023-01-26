@@ -1,11 +1,10 @@
-import bonjour from 'bonjour';
-import chalk from 'chalk';
 import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylight';
 
+import ElgatoLightService from './services/elgatoLightService';
 
 
-const bonjourService = bonjour();
-const browser = bonjourService.find({ type: 'elg' });
+const elgatoLightService: ElgatoLightService = new ElgatoLightService();
+elgatoLightService.findOnInterval(5000);
 
 
 let url = "http://10.0.0.148:9124/api/webcam/status";
@@ -25,21 +24,9 @@ let url = "http://10.0.0.148:9124/api/webcam/status";
 
 
 
-
-
 let lastStatus = "webcam.status.offline";
 let errorCount = 0;
 let showReconnect = false;
-
-const bonjourServiceInterval = setInterval(() => {
-  // console.log("");
-  // console.log(chalk.bgYellow.black.bold("Services we know about:", browser.services.length <= 0 ? "None" : browser.services.length));
-  // browser.services.forEach(s => {
-  //   console.log(s.host, s.referer.address, s.port);
-  // })
-
-  browser.update();
-}, 5000);
 
 const webcamStatusInterval = setInterval(async () => {
   
@@ -83,34 +70,18 @@ const webcamStatusInterval = setInterval(async () => {
   if (lastStatus !== newStatus && (newStatus === "webcam.status.online" || newStatus === "webcam.status.offline")) {
     
     if (newStatus === "webcam.status.online") {
-      browser.services.forEach(s => {
-        turnOnKeyLight({
-          ip: s.referer.address,
-          port: s.port
-        });
-      });
+      // browser.services.forEach(s => {
+      for (const [key, light] of elgatoLightService.lights) {
+        turnOnKeyLight(light);
+      }
     }
     else if (newStatus === "webcam.status.offline") {
-      browser.services.forEach(s => {
-        turnOffKeyLight({
-          ip: s.referer.address,
-          port: s.port
-        });
-      });
+      // browser.services.forEach(s => {
+      for (const [key, light] of elgatoLightService.lights) {
+        turnOffKeyLight(light);
+      };
     }
 
     lastStatus = newStatus;
   }
 }, 1000);
-
-browser.on("up", (service) => {
-  console.log(chalk.bgGreen.black.bold("Found a new light!"));
-  console.log(service.host, service.referer.address, service.port);
-
-  //flashKeyLight(service);
-});
-
-browser.on("down", (service) => {
-  console.log(chalk.bgRed.black.bold("Service went away"));
-  console.log(service.host, service.referer.address, service.port);
-});
