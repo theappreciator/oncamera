@@ -1,7 +1,7 @@
 import chalk = require('chalk');
 import makeMdns = require('multicast-dns');
-import { ElgatoKeyLightResponse, ElgatoLight, MdnsRecordA, MdnsRecordSrv } from '../types';
-import { delay, getLightDisplayName, getUrlFromLight } from '../utils';
+import { ElgatoKeyLightResponse, ElgatoLight, MdnsRecordA, MdnsRecordSrv } from '@oncamera/common';
+import { delay, getLightDisplayName, getUrlFromLight } from '@oncamera/common';
 
 const WAIT_MDNS_READY_INTERVAL_MILLIS = 3000;
 const HEARTBEAT_INTERVAL_MILLIS = 5000;

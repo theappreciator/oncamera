@@ -1,4 +1,4 @@
-import { WebcamStatus } from "../types";
+import { WebcamStatus } from '@oncamera/common';
 
 
 

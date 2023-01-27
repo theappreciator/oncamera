@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import { ElgatoLight } from './types';
-import { delay, getUrlFromLight } from './utils';
+import { ElgatoLight } from '@oncamera/common';
+import { delay, getUrlFromLight } from '@oncamera/common';
 
 
 
