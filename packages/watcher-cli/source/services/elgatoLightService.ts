@@ -75,7 +75,7 @@ class ElgatoLightService {
         this.checkForNewLights();        
     }
 
-    public findOnInterval(mills: number) {
+    public findAndUpdateOnInterval(mills: number) {
         this.findOnce();
 
         setInterval(() => {
@@ -107,7 +107,7 @@ class ElgatoLightService {
 
     private stopHeartbeat() {
         if (this.heartbeatInterval) {
-            this.heartbeatInterval.unref;
+            this.heartbeatInterval.unref();
         }
         this.isHeartbeatRunning = false;
     }
