@@ -1,4 +1,4 @@
-export interface ElgatoLight {
+export interface MdnsDevice {
     id: string,
     name: string,
     host: string,
@@ -32,10 +32,10 @@ export interface MdnsRecordSrv {
     ttl?: number,
     class?: string,
     flush?: boolean,
-    data?: MdnsSrv
+    data?: MdnsRecordSrvData
 }
 
-export interface MdnsSrv {
+export interface MdnsRecordSrvData {
     priority?: number,
     weight?: number,
     port?: number,

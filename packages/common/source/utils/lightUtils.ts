@@ -1,18 +1,18 @@
-import { ElgatoLight } from "../types"
+import { MdnsDevice } from "../types"
 
-const getUrlFromLight = (light: ElgatoLight) => {
-    const keylightUrl = `http://${light.ip}:${light.port}/elgato/lights`;
-    return keylightUrl;
+const getUrlFromDevice = (device: MdnsDevice) => {
+    const url = `http://${device.ip}:${device.port}/elgato/lights`;
+    return url;
 }
 
-const getLightDisplayName = (light: ElgatoLight, detail:boolean = false) => {
+const getDeviceDisplayName = (device: MdnsDevice, detail:boolean = false) => {
     if (detail)
-        return light.name + " " + light.ip + " " + light.port;
+        return device.name + " " + device.ip + " " + device.port;
 
-    return light.name;
+    return device.name;
 }
 
 export {
-    getUrlFromLight,
-    getLightDisplayName
+    getUrlFromDevice,
+    getDeviceDisplayName
 }
