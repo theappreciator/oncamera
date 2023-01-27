@@ -41,3 +41,8 @@ export interface MdnsSrv {
     port?: number,
     target?: string
 }
+
+export enum WebcamStatus {
+    online = "webcam.status.online",
+    offline = "webcam.status.offline"
+}
