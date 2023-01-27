@@ -1,6 +1,5 @@
 import chalk from 'chalk';
-import { ElgatoLight } from '@oncamera/common';
-import { delay, getUrlFromLight } from '@oncamera/common';
+import { delay, getUrlFromDevice, MdnsDevice } from '@oncamera/common';
 
 
 
@@ -45,9 +44,9 @@ async function turnLightOn(url: string) {
   return await data.json();
 }
 
-export async function toggleKeyLight(light: ElgatoLight) {
+export async function toggleKeyLight(light: MdnsDevice) {
 
-  const keylightUrl = getUrlFromLight(light);
+  const keylightUrl = getUrlFromDevice(light);
 
   const keyLight = await getKeylight(keylightUrl);
   const lightStatus = keyLight.lights[0];
@@ -61,19 +60,19 @@ export async function toggleKeyLight(light: ElgatoLight) {
   }
 }
 
-export async function turnOnKeyLight(light: ElgatoLight) {
-  const keylightUrl = getUrlFromLight(light);
+export async function turnOnKeyLight(light: MdnsDevice) {
+  const keylightUrl = getUrlFromDevice(light);
   const returnVal = turnLightOn(keylightUrl);
   return returnVal;
 }
 
-export async function turnOffKeyLight(light: ElgatoLight) {
-  const keylightUrl = getUrlFromLight(light);
+export async function turnOffKeyLight(light: MdnsDevice) {
+  const keylightUrl = getUrlFromDevice(light);
   const returnVal = turnLightOff(keylightUrl);
   return returnVal;
 }
 
-export async function flashKeyLight(light: ElgatoLight) {
+export async function flashKeyLight(light: MdnsDevice) {
   const turnedOn = turnOnKeyLight(light);
 
   turnedOn.then(() => {
