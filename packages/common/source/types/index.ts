@@ -5,17 +5,6 @@ export interface MdnsDevice {
     ip: string,
     port: number
 }
-
-export interface ElgatoKeyLightResponse {
-    numberOfLights: number,
-    lights: ElgatoKeyLightStatusResponse[]
-}
-
-export interface ElgatoKeyLightStatusResponse {
-    on: number,
-    brightness: number,
-    temperature: number
-}
   
 export interface MdnsRecordA {
     name?: string,

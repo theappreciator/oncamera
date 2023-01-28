@@ -1,4 +1,5 @@
-import { ElgatoKeyLightResponse, MdnsListener } from '@oncamera/common';
+import { MdnsListener } from '@oncamera/common';
+import { ElgatoKeyLightResponse } from '../types';
 
 
 
