@@ -1,27 +1,78 @@
-import { WebcamStatus } from '@oncamera/common';
+import { getUrlFromDevice, MdnsListener, WebcamStatus } from '@oncamera/common';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 
 
+
+const WEBCAM_LISTEN_INTERVAL_MILLIS = 1000;
 
 class WebcamStatusService {
 
-    private url = "http://10.0.0.148:9124/api/webcam/status";
+    private mdnsListener;
+    private webcamServiceName = '_webcam_status._tcp.local';
+
+
+    private url?: string;// = "http://10.0.0.148:9124/api/webcam/status";
     private lastStatus;
     private isListening;
     private errorCount;
     private webcamStatusInterval?: NodeJS.Timeout;
 
     public constructor() {
+
+        this.mdnsListener = new MdnsListener(
+            this.webcamServiceName,
+            "Webcam Status",
+            (json: any) => {
+                console.log("Heartbeat validated");
+                // if (!keyLightResponse?.lights)
+                //     throw new Error("Heartbeat failed, invalid json");
+            });
+
         this.lastStatus = WebcamStatus.offline;
         this.isListening = false;
         this.errorCount = 0;
     }
 
-    public listenForStatusChanges(millis: number, listenerOnline: () => void, listenerOffline: () => void) {
-        if (!this.isListening) {
-            this.errorCount = 0;
-            this.isListening = true;
+    public get lights() {
+        return this.mdnsListener.devices;
+    }
 
-            this.getRemoteWebcamStatusWrapper(millis, listenerOnline, listenerOffline);
+    private async findWebcamStatusServer() {
+        this.mdnsListener.findOnce();        
+    }
+
+    private stopInterval() {
+        this.mdnsListener.stopInterval();
+    }
+
+
+
+    public listenForStatusChanges(millis: number, listenerOnline: () => void, listenerOffline: () => void) {
+        if (!this.url) {
+            console.log("Waiting to get url from remote webcam status api");
+
+            if (this.mdnsListener.devices.size > 0) {
+                const webcamDevice = [...this.mdnsListener.devices][0][1];
+                this.url = getUrlFromDevice(webcamDevice);
+                console.log("Got url!", this.url);
+            }
+            else {
+                console.log("Waiting to get remote webcam status device");
+                this.findWebcamStatusServer();
+
+                setTimeout(() => {
+                    this.listenForStatusChanges(millis, listenerOnline, listenerOffline);
+                }, 5000);
+            }
+        }
+        
+        if (this.url) {
+            if (!this.isListening) {
+                this.errorCount = 0;
+                this.isListening = true;
+
+                this.getRemoteWebcamStatusWrapper(millis, listenerOnline, listenerOffline);
+            }
         }
     }
 

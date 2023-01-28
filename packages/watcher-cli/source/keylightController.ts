@@ -3,11 +3,6 @@ import { delay, getUrlFromDevice, MdnsDevice } from '@oncamera/common';
 
 
 
-async function getKeylight(url: string) {
-  const data = await fetch(url);
-  return await data.json();
-}
-
 async function turnLightOff(url: string) {
   console.log(chalk.yellow("turning off", url));
   const data = await fetch(url,{
@@ -44,35 +39,19 @@ async function turnLightOn(url: string) {
   return await data.json();
 }
 
-export async function toggleKeyLight(light: MdnsDevice) {
-
-  const keylightUrl = getUrlFromDevice(light);
-
-  const keyLight = await getKeylight(keylightUrl);
-  const lightStatus = keyLight.lights[0];
-
-  try {
-    const returnVal = lightStatus.on ? await turnLightOff(keylightUrl) : await turnLightOn(keylightUrl);
-    return returnVal;
-  }
-  catch (e) {
-    console.log("Error toggling", keylightUrl);
-  }
-}
-
-export async function turnOnKeyLight(light: MdnsDevice) {
+async function turnOnKeyLight(light: MdnsDevice) {
   const keylightUrl = getUrlFromDevice(light);
   const returnVal = turnLightOn(keylightUrl);
   return returnVal;
 }
 
-export async function turnOffKeyLight(light: MdnsDevice) {
+async function turnOffKeyLight(light: MdnsDevice) {
   const keylightUrl = getUrlFromDevice(light);
   const returnVal = turnLightOff(keylightUrl);
   return returnVal;
 }
 
-export async function flashKeyLight(light: MdnsDevice) {
+async function flashKeyLight(light: MdnsDevice) {
   const turnedOn = turnOnKeyLight(light);
 
   turnedOn.then(() => {
@@ -98,4 +77,10 @@ export async function flashKeyLight(light: MdnsDevice) {
   });
 
   return;
+}
+
+export {
+  turnOnKeyLight,
+  turnOffKeyLight,
+  flashKeyLight
 }

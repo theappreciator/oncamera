@@ -1,4 +1,4 @@
-import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylight';
+import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylightController';
 
 import { ElgatoLightService, WebcamStatusService } from './services';
 
@@ -25,6 +25,7 @@ elgatoLightService.findAndUpdateOnInterval(5000);
 //     url = "http://" + service.referer.address + ":" + service.port + "/api/webcam/status"
 //   }
 // });
+// be sure to send back a version number
 
 
 const turnOnLights = () => {
