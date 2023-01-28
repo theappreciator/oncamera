@@ -12,7 +12,7 @@ class MdnsListener {
     private displayName?: string;
     private mdnsBrowser: MulticastDNS;
 
-    private connectedDevices = new Map<string, MdnsDevice>();
+    private connectedDevices;
     private findInterval = 0;
     private isHeartbeatRunning = false;
     private heartbeatInterval?: NodeJS.Timeout;
@@ -22,6 +22,7 @@ class MdnsListener {
     public constructor(serviceName: string, displayName: string, heartbeatValidator: (json: any) => void) {
         this.serviceName = serviceName;
         this.displayName = displayName;
+        this.connectedDevices = new Map<string, MdnsDevice>();
 
         this.mdnsBrowser = makeMdns();
 
