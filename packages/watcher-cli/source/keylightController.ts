@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { delay, getUrlFromDevice, MdnsDevice } from '@oncamera/common';
+import { delay, getUrlFromLight, MdnsDevice } from '@oncamera/common';
 
 
 
@@ -40,13 +40,13 @@ async function turnLightOn(url: string) {
 }
 
 async function turnOnKeyLight(light: MdnsDevice) {
-  const keylightUrl = getUrlFromDevice(light);
+  const keylightUrl = getUrlFromLight(light);
   const returnVal = turnLightOn(keylightUrl);
   return returnVal;
 }
 
 async function turnOffKeyLight(light: MdnsDevice) {
-  const keylightUrl = getUrlFromDevice(light);
+  const keylightUrl = getUrlFromLight(light);
   const returnVal = turnLightOff(keylightUrl);
   return returnVal;
 }
