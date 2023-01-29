@@ -1,7 +1,9 @@
 import chalk from 'chalk';
-import makeMdns, { MulticastDNS } from 'multicast-dns';
 import { MdnsDevice, MdnsRecordA, MdnsRecordSrv } from '../types'
 import { delay, getDeviceDisplayName, getUrlFromDevice } from '../utils'
+import MdnsObject from './mdnsObject';
+import { RecordType } from "dns-packet";
+
 
 const WAIT_MDNS_READY_INTERVAL_MILLIS = 3000;
 const HEARTBEAT_INTERVAL_MILLIS = 5000;
@@ -10,7 +12,7 @@ const HEARTBEAT_INTERVAL_MILLIS = 5000;
 class MdnsListener {
     private serviceName:string;
     private displayName?: string;
-    private mdnsBrowser: MulticastDNS;
+    private mdns: MdnsObject;
 
     private connectedDevices;
     private findInterval = 0;
@@ -24,7 +26,7 @@ class MdnsListener {
         this.displayName = displayName;
         this.connectedDevices = new Map<string, MdnsDevice>();
 
-        this.mdnsBrowser = makeMdns();
+        this.mdns = MdnsObject.Instance;
 
         this.setResponse(heartbeatValidator);
         this.setReady(this.displayName);
@@ -35,7 +37,7 @@ class MdnsListener {
     }
 
     public setResponse(heartbeatValidator: (json: any) => void) {
-        this.mdnsBrowser.on("response", (response) => {
+        this.mdns.browser.on("response", (response) => {
 
             const matchedAnswer = response.answers.find(a => a.name === this.serviceName);
             if (matchedAnswer) {
@@ -70,22 +72,22 @@ class MdnsListener {
     }
 
     private setReady(browserName?: string) {
-        this.mdnsBrowser.on("ready", () => {
+        this.mdns.browser.on("ready", () => {
             console.log(chalk.bgGreen.black.bold(`${browserName ? browserName + ' ' : ''}MDNS Service Browser ready`));
 
             this.isReady = true;
         })
     }
 
-    public async findOnce() {
-        this.checkForNewDevices();        
+    public async findOnce(type: RecordType) {
+        this.checkForNewDevices(type);
     }
 
-    public findAndUpdateOnInterval(mills: number) {
-        this.findOnce();
+    public findAndUpdateOnInterval(mills: number, type: RecordType) {
+        this.findOnce(type);
 
         setInterval(() => {
-            this.findOnce()
+            this.findOnce(type)
         }, mills);
     }
 
@@ -93,12 +95,12 @@ class MdnsListener {
         clearInterval(this.findInterval);
     }
 
-    private checkForNewDevices() {
-        this.mdnsBrowser.query({
+    private checkForNewDevices(type: RecordType) {
+        this.mdns.browser.query({
             questions: [
                 {
                     name:this.serviceName,
-                    type:'PTR'
+                    type: type
                 }
             ]
         });

@@ -3,3 +3,4 @@ export function delay(t: any, v?: any) {
 }
 
 export * from './lightUtils';
+export * from './networkUtils';
