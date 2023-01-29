@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
-    "build": "npm run clean && npm ci && tsc -p ./tsconfig.json",
+    "build": "npm run clean && tsc -p ./tsconfig.json",
     "build:check": "tsc -p ./tsconfig.cli.json --noEmit",
     "build:common": "npm run build",
     "clean": "rm -rf dist",

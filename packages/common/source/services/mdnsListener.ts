@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import { MdnsDevice, MdnsRecordA, MdnsRecordSrv } from '../types'
-import { delay, getDeviceDisplayName, getUrlFromDevice } from '../utils'
+import { delay, getDeviceDisplayName, getLocalHostnameDotLocal, getIpAddress, getUrlFromDevice, getNetworkAddress } from '../utils'
 import MdnsObject from './mdnsObject';
-import { RecordType } from "dns-packet";
+import { Answer, RecordType } from "dns-packet";
 
 
 const WAIT_MDNS_READY_INTERVAL_MILLIS = 3000;
@@ -21,7 +21,7 @@ class MdnsListener {
     private isReady = false;
 
 
-    public constructor(serviceName: string, displayName: string, heartbeatValidator: (json: any) => void) {
+    public constructor(serviceName: string, displayName: string, heartbeatValidator: (device: MdnsDevice) => Promise<void>) {
         this.serviceName = serviceName;
         this.displayName = displayName;
         this.connectedDevices = new Map<string, MdnsDevice>();
@@ -36,22 +36,20 @@ class MdnsListener {
         return this.connectedDevices;
     }
 
-    public setResponse(heartbeatValidator: (json: any) => void) {
+    public setResponse(heartbeatValidator: (device: MdnsDevice) => Promise<void>) {
         this.mdns.browser.on("response", (response) => {
 
             const matchedAnswer = response.answers.find(a => a.name === this.serviceName);
             if (matchedAnswer) {
                 const recordA = response.additionals.find(a => a.type === "A") as MdnsRecordA;
                 const recordSrv = response.additionals.find(a => a.type === "SRV") as MdnsRecordSrv;
-                
             
                 if (recordA?.name && recordA?.data && recordSrv?.data?.port) {
                     const device : MdnsDevice = {
                         id: recordA.name,
                         name: recordA.name,
                         host: recordA.name,
-                        ip: recordA.data,
-                        port: recordSrv.data.port
+                        ...getNetworkAddress(recordA.data, recordSrv.data.port)
                     } 
             
                     if (!this.connectedDevices.get(device.id)) {
@@ -96,17 +94,24 @@ class MdnsListener {
     }
 
     private checkForNewDevices(type: RecordType) {
+        const answer: Answer = {
+            name: getLocalHostnameDotLocal(),
+            type: "A",
+            data: getIpAddress()
+        }
+
         this.mdns.browser.query({
             questions: [
                 {
                     name:this.serviceName,
                     type: type
                 }
-            ]
+            ],
+            answers: [answer]
         });
     }
 
-    public startHeartbeat(heartbeatValidator: (json: any) => void) {
+    public startHeartbeat(heartbeatValidator: (device: MdnsDevice) => Promise<void>) {
         if (!this.isHeartbeatRunning) {
             this.isHeartbeatRunning = true;
             this.checkDevicesAvailabilityWrapper(heartbeatValidator);
@@ -120,7 +125,7 @@ class MdnsListener {
         this.isHeartbeatRunning = false;
     }
 
-    private checkDevicesAvailabilityWrapper(heartbeatValidator: (json: any) => void) {
+    private checkDevicesAvailabilityWrapper(heartbeatValidator: (device: MdnsDevice) => Promise<void>) {
         if (this.isHeartbeatRunning) {
             this.heartbeatInterval = setTimeout(() => {
                 this.checkDevicesAvailability(heartbeatValidator);
@@ -129,20 +134,14 @@ class MdnsListener {
         }
     }
 
-    private checkDevicesAvailability(heartbeatValidator: (json: any) => void) {
+    private checkDevicesAvailability(heartbeatValidator: (device: MdnsDevice) => Promise<void>) {
         this.connectedDevices.forEach((device) => {
-            this.heartBeat(device, heartbeatValidator).catch(e => {
+            heartbeatValidator(device).catch(e => {
                 console.log(chalk.bgRed.black("Device failed heartbeat!  Removing..."));
                 console.log(getDeviceDisplayName(device, true));
                 this.connectedDevices.delete(device.id);
             });
         });
-    }
-
-    private async heartBeat(device: MdnsDevice, heartbeatValidator: (json: any) => void) {
-        const data = await fetch(getUrlFromDevice(device));
-        const json = await data.json();
-        heartbeatValidator(json);   
     }
     
 }

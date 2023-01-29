@@ -36,4 +36,10 @@ export enum WebcamStatus {
     offline = "webcam.status.offline"
 }
 
-export const PERSIST_STORE_KEY = "webcam.status";
+export enum MdnsServiceTypes {
+    webcamStatus = '_webcam_status._tcp.local'
+}
+
+export interface WebcamStatusServerResponse {
+    status: WebcamStatus
+}
