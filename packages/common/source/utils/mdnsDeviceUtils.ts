@@ -1,8 +1,16 @@
 import { MdnsDevice } from "../types"
 
 const getUrlFromDevice = (device: MdnsDevice) => {
-    const url = `http://${device.ip}:${device.port}/elgato/lights`;
+    const url = `http://${device.ip}:${device.port}`;
     return url;
+}
+
+const getUrlFromLight = (device: MdnsDevice) => {
+    return getUrlFromDevice(device) + '/elgato/lights';
+}
+
+const getUrlFromWebcamStatusServer = (device: MdnsDevice) => {
+    return getUrlFromDevice(device) + '/api/webcam/status';
 }
 
 const getDeviceDisplayName = (device: MdnsDevice, detail:boolean = false) => {
@@ -14,5 +22,7 @@ const getDeviceDisplayName = (device: MdnsDevice, detail:boolean = false) => {
 
 export {
     getUrlFromDevice,
+    getUrlFromLight,
+    getUrlFromWebcamStatusServer,
     getDeviceDisplayName
 }

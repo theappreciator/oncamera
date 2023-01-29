@@ -1,19 +1,19 @@
 import express, {Express, Request, Response} from "express";
 import Persist from "./persist";
-import { PERSIST_STORE_KEY, WebcamStatus, MdnsPublisher } from '@oncamera/common';
+import { MdnsPublisher } from '@oncamera/common';
+import { WebcamStatus, MdnsServiceTypes } from '@oncamera/common';
 
 const app: Express = express();
 const port = 9124;
+const PERSIST_STORE_KEY = "webcam.status"; // this probably needs to be moved back to status-api
+
 
 const persist = Persist.Instance;
 
-const webcamServiceName = '_webcam_status._tcp.local';
 const publisher = new MdnsPublisher(
-    webcamServiceName,
-    "Webcam Status Server",
-    (json: any) => {
-        console.log("STATUS SERVER heartbeat");
-    });
+    MdnsServiceTypes.webcamStatus,
+    "Webcam Status Server"
+);
 
 app.use(express.json());       // to support JSON-encoded bodies
 app.use(express.urlencoded({ extended: true }));
