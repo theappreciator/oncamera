@@ -35,3 +35,5 @@ export enum WebcamStatus {
     online = "webcam.status.online",
     offline = "webcam.status.offline"
 }
+
+export const PERSIST_STORE_KEY = "webcam.status";
