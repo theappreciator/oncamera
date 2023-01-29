@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { MdnsDevice, MdnsRecordA, MdnsRecordSrv } from '../types'
-import { delay, getDeviceDisplayName, getLocalHostnameDotLocal, getIpAddress, getUrlFromDevice, getNetworkAddress } from '../utils'
+import { delay, getDeviceDisplayName, getLocalHostnameDotLocal, getIpAddress, getNetworkAddress } from '../utils'
 import MdnsObject from './mdnsObject';
 import { Answer, RecordType } from "dns-packet";
 
