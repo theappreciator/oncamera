@@ -1,5 +1,5 @@
-export function delay(t: any, v?: any) {
-    return new Promise(resolve => setTimeout(resolve, t, v));
+export function delay<T>(time: number, val?: T) {
+    return new Promise(resolve => setTimeout(resolve, time, val));
 }
 
 export * from './mdnsDeviceUtils';
