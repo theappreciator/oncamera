@@ -4,7 +4,8 @@ import MdnsObject from './mdnsObject';
 import { Answer } from "dns-packet";
 import { getIpAddress, getLocalHostnameDotLocal, getLocalHostnameDotLocalNormalized } from '../utils';
 
-
+import * as log4js from "log4js";
+const logger = log4js.getLogger();
 
 class MdnsPublisher {
     private serviceName:string;
@@ -66,7 +67,7 @@ class MdnsPublisher {
 
     private setReady(browserName?: string) {
         this.mdns.browser.on("ready", () => {
-            console.log(chalk.bgGreen.black.bold(`${browserName ? browserName + ' ' : ''}MDNS Service Publisher ready`));
+            logger.info(chalk.bgGreen.black.bold(`${browserName ? browserName + ' ' : ''}MDNS Service Publisher ready`));
 
             this.isReady = true;
         })

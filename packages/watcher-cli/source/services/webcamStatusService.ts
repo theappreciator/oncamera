@@ -1,12 +1,14 @@
 import { MdnsDevice, MdnsListener } from '@oncamera/common';
 import { WebcamStatus, MdnsServiceTypes, WebcamStatusServerResponse } from '@oncamera/common';
 import { getUrlFromWebcamStatusServer } from '@oncamera/common';
-
-
+import * as log4js from "log4js";
 
 const WEBCAM_LISTEN_INTERVAL_MILLIS = 1000;
 
+const logger = log4js.getLogger();
+
 class WebcamStatusService {
+
 
     private mdnsListener;
 
@@ -94,7 +96,7 @@ class WebcamStatusService {
         this.getRemoteWebcamStatus(this.url)
         .then((status) => {
             if (this.errorCount > 0) {
-                console.log("Re-connected to " + this.url + " after " + this.errorCount + " failed attempts");
+                logger.info("Re-connected to " + this.url + " after " + this.errorCount + " failed attempts");
                 this.errorCount = 0;
             }
 
@@ -114,7 +116,7 @@ class WebcamStatusService {
         
             // only report out when >0 and divisble by 5
             if (this.errorCount && (this.errorCount % 5 === 0)) {
-                console.log("Having trouble connecting to " + this.url + ".  Tried " + this.errorCount + " times");
+                logger.info("Having trouble connecting to " + this.url + ".  Tried " + this.errorCount + " times");
             }
         });
 

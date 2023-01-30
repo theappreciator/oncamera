@@ -7,6 +7,12 @@ const app: Express = express();
 const port = 9124;
 const PERSIST_STORE_KEY = "webcam.status"; // this probably needs to be moved back to status-api
 
+import * as log4js from "log4js";
+log4js.configure({
+  appenders: { normal: { type: "stdout" } },
+  categories: { default: { appenders: ["normal"], level: "info" } },
+});
+const logger = log4js.getLogger();
 
 const persist = Persist.Instance;
 
@@ -34,11 +40,11 @@ app.post("/api/webcam/status", (req: Request, res: Response) => {
     if (newStatus && (newStatus === WebcamStatus.online || newStatus === WebcamStatus.offline)) {
 
         const oldStatus = persist.retrieve(PERSIST_STORE_KEY);
-        console.log("Status - old: " + oldStatus + " new: " + newStatus);
+        logger.info("Status - old: " + oldStatus + " new: " + newStatus);
 
         if (oldStatus !== newStatus) {
             persist.save(PERSIST_STORE_KEY, newStatus);
-            console.log("Saved new status: ", persist.retrieve(PERSIST_STORE_KEY));
+            logger.info("Saved new status: ", persist.retrieve(PERSIST_STORE_KEY));
         }
     }
     
@@ -47,5 +53,5 @@ app.post("/api/webcam/status", (req: Request, res: Response) => {
 })
 
 app.listen(port, () => {
-    console.log("Server running on port " + port);
+    logger.info("Server running on port " + port);
 })

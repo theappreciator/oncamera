@@ -1,10 +1,13 @@
 import chalk from 'chalk';
 import { delay, getUrlFromLight, MdnsDevice } from '@oncamera/common';
+import * as log4js from "log4js";
+
+const logger = log4js.getLogger();
 
 
 
 async function turnLightOff(url: string) {
-  console.log(chalk.yellow("turning off", url));
+  logger.info(chalk.yellow("turning off", url));
   const data = await fetch(url,{
     method: "PUT",
     body: JSON.stringify({
@@ -22,7 +25,7 @@ async function turnLightOff(url: string) {
 }
 
 async function turnLightOn(url: string) {
-  console.log(chalk.yellow("turning on", url));
+  logger.info(chalk.yellow("turning on", url));
   const data = await fetch(url,{
     method: "PUT",
     body: JSON.stringify({
@@ -55,23 +58,23 @@ async function flashKeyLight(light: MdnsDevice) {
   const turnedOn = turnOnKeyLight(light);
 
   turnedOn.then(() => {
-    console.log("Turned on:", light.host, new Date());
+    logger.info("Turned on:", light.host, new Date());
 
     return delay(500).then(() => {
-      console.log("Turning off", light.host, new Date());
+      logger.info("Turning off", light.host, new Date());
       return turnOffKeyLight(light);
     });
   }).then(() => {
-    console.log("Turned off", light.host, new Date());
+    logger.info("Turned off", light.host, new Date());
 
     return delay(350).then(() => {
       return turnOnKeyLight(light);
     });
   }).then(() => {
-    console.log("Turned on:", light.host, new Date());
+    logger.info("Turned on:", light.host, new Date());
 
     return delay(500).then(() => {
-      console.log("Turning off", light.host, new Date());
+      logger.info("Turning off", light.host, new Date());
       return turnOffKeyLight(light);
     });
   });

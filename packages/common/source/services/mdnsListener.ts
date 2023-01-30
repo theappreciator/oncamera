@@ -4,6 +4,8 @@ import { delay, getDeviceDisplayName, getLocalHostnameDotLocal, getIpAddress, ge
 import MdnsObject from './mdnsObject';
 import { Answer, RecordType } from "dns-packet";
 
+import * as log4js from "log4js";
+const logger = log4js.getLogger();
 
 const WAIT_MDNS_READY_INTERVAL_MILLIS = 3000;
 const HEARTBEAT_INTERVAL_MILLIS = 5000;
@@ -55,14 +57,14 @@ class MdnsListener {
                     if (!this.connectedDevices.get(device.id)) {
                         this.connectedDevices.set(device.id, device);
                 
-                        console.log(chalk.bgGreen.black.bold(`Found a new ${this.displayName + ' '}device!`));
-                        console.log(getDeviceDisplayName(device, true));
+                        logger.info(chalk.bgGreen.black.bold(`Found a new ${this.displayName + ' '}device!`));
+                        logger.info(getDeviceDisplayName(device, true));
 
                         this.startHeartbeat(heartbeatValidator);
                     }
                 }
                 else {
-                    console.log(`Discovered a device for ${this.serviceName} we couldn't add!`, recordA, recordSrv);
+                    logger.info(`Discovered a device for ${this.serviceName} we couldn't add!`, recordA, recordSrv);
                 }
             }
         
@@ -71,7 +73,7 @@ class MdnsListener {
 
     private setReady(browserName?: string) {
         this.mdns.browser.on("ready", () => {
-            console.log(chalk.bgGreen.black.bold(`${browserName ? browserName + ' ' : ''}MDNS Service Browser ready`));
+            logger.info(chalk.bgGreen.black.bold(`${browserName ? browserName + ' ' : ''}MDNS Service Browser ready`));
 
             this.isReady = true;
         })
@@ -137,8 +139,8 @@ class MdnsListener {
     private checkDevicesAvailability(heartbeatValidator: (device: MdnsDevice) => Promise<void>) {
         this.connectedDevices.forEach((device) => {
             heartbeatValidator(device).catch(e => {
-                console.log(chalk.bgRed.black("Device failed heartbeat!  Removing..."));
-                console.log(getDeviceDisplayName(device, true));
+                logger.info(chalk.bgRed.black("Device failed heartbeat!  Removing..."));
+                logger.info(getDeviceDisplayName(device, true));
                 this.connectedDevices.delete(device.id);
             });
         });

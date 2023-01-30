@@ -2,6 +2,11 @@ import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylightContro
 
 import { ElgatoLightService, WebcamStatusService } from './services';
 
+import * as log4js from "log4js";
+log4js.configure({
+  appenders: { normal: { type: "stdout" } },
+  categories: { default: { appenders: ["normal"], level: "info" } },
+});
 
 const WEBCAM_LISTEN_INTERVAL_MILLIS = 1000;
 
