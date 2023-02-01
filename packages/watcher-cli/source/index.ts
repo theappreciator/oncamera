@@ -3,6 +3,7 @@ import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylightContro
 import { ElgatoLightService, WebcamStatusService } from './services';
 
 import * as log4js from "log4js";
+import { WebcamStatus } from '@oncamera/common';
 log4js.configure({
   appenders: { normal: { type: "stdout" } },
   categories: { default: { appenders: ["normal"], level: "info" } },
@@ -26,6 +27,15 @@ const turnOffLights = () => {
     };
 }
 
+const onChange = (status: WebcamStatus) => {
+    if (status === WebcamStatus.online) {
+        turnOnLights();
+    }
+    else if (status === WebcamStatus.offline) {
+        turnOffLights();
+    }
+}
+
 // be sure to send back a version number
-const webcamStatusService = new WebcamStatusService();
-webcamStatusService.listenForStatusChanges(WEBCAM_LISTEN_INTERVAL_MILLIS, turnOnLights, turnOffLights);
+const webcamStatusService = new WebcamStatusService(onChange);
+webcamStatusService.listenForStatusChanges(WEBCAM_LISTEN_INTERVAL_MILLIS);

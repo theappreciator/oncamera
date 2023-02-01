@@ -1,10 +1,11 @@
 import chalk from 'chalk';
-import { MdnsDevice, MdnsRecordA, MdnsRecordSrv } from '../types'
-import { delay, getDeviceDisplayName, getLocalHostnameDotLocal, getIpAddress, getNetworkAddress } from '../utils'
+import { MdnsDevice, MdnsServiceTypes } from '../types'
+import { delay, getDeviceDisplayName, getNetworkAddress } from '../utils'
 import MdnsObject from './mdnsObject';
-import { Answer, RecordType } from "dns-packet";
+import { RecordType, SrvAnswer, StringAnswer, TxtAnswer, TxtData } from "dns-packet";
 
 import * as log4js from "log4js";
+import { ResponsePacket } from 'multicast-dns';
 const logger = log4js.getLogger();
 
 const WAIT_MDNS_READY_INTERVAL_MILLIS = 3000;
@@ -23,38 +24,46 @@ class MdnsListener {
     private isReady = false;
 
 
-    public constructor(serviceName: string, displayName: string, heartbeatValidator: (device: MdnsDevice) => Promise<void>) {
+    public constructor(
+        serviceName: string,
+        displayName: string,
+        heartbeatValidator: (device: MdnsDevice) => Promise<void>,
+        dataListener: (data: TxtData[]) => void = ([]) => {}
+    ) {
         this.serviceName = serviceName;
         this.displayName = displayName;
         this.connectedDevices = new Map<string, MdnsDevice>();
 
         this.mdns = MdnsObject.Instance;
 
-        this.setResponse(heartbeatValidator);
-        this.setReady(this.displayName);
+        this.setOnResponse(heartbeatValidator, dataListener);
+        this.setOnReady(this.displayName);
     }  
 
     public get devices() {
         return this.connectedDevices;
     }
 
-    public setResponse(heartbeatValidator: (device: MdnsDevice) => Promise<void>) {
+    private setOnResponse(heartbeatValidator: (device: MdnsDevice) => Promise<void>, dataListener: (data: TxtData[]) => void) {
         this.mdns.browser.on("response", (response) => {
 
-            const matchedAnswer = response.answers.find(a => a.name === this.serviceName);
-            if (matchedAnswer) {
-                const recordA = response.additionals.find(a => a.type === "A") as MdnsRecordA;
-                const recordSrv = response.additionals.find(a => a.type === "SRV") as MdnsRecordSrv;
+            const matchedAnswerPtr = response.answers.find(a => a.name === this.serviceName && a.type === 'PTR');
+            if (matchedAnswerPtr) {
+                const recordA = response.additionals.find(a => a.type === "A") as StringAnswer;
+                const recordSrv = response.additionals.find(a => a.type === "SRV") as SrvAnswer;
+                const recordTxt = response.additionals.filter(a => a.type === 'TXT') as TxtAnswer[] || [] as TxtAnswer[];
             
                 if (recordA?.name && recordA?.data && recordSrv?.data?.port) {
-                    const device : MdnsDevice = {
-                        id: recordA.name,
-                        name: recordA.name,
-                        host: recordA.name,
-                        ...getNetworkAddress(recordA.data, recordSrv.data.port)
-                    } 
-            
-                    if (!this.connectedDevices.get(device.id)) {
+
+                    const id = recordA.name;
+                    if (!this.connectedDevices.get(id)) {
+                        const device : MdnsDevice = {
+                            id: recordA.name,
+                            name: recordA.name,
+                            host: recordA.name,
+                            ...getNetworkAddress(recordA.data, recordSrv.data.port)
+                        }
+
                         this.connectedDevices.set(device.id, device);
                 
                         logger.info(chalk.bgGreen.black.bold(`Found a new ${this.displayName + ' '}device!`));
@@ -62,16 +71,23 @@ class MdnsListener {
 
                         this.startHeartbeat(heartbeatValidator);
                     }
+
+                    const data: TxtData[] = [];
+                    recordTxt.forEach(r => {
+                        data.push(r.data);
+                    })
+                    dataListener(data);
+
                 }
                 else {
-                    logger.info(`Discovered a device for ${this.serviceName} we couldn't add!`, recordA, recordSrv);
+                    logger.info(`Discovered a device for ${this.serviceName} we couldn't add!`, recordA, recordSrv, recordTxt);
                 }
             }
         
         });
     }
 
-    private setReady(browserName?: string) {
+    private setOnReady(browserName?: string) {
         this.mdns.browser.on("ready", () => {
             logger.info(chalk.bgGreen.black.bold(`${browserName ? browserName + ' ' : ''}MDNS Service Browser ready`));
 
@@ -96,20 +112,13 @@ class MdnsListener {
     }
 
     private checkForNewDevices(type: RecordType) {
-        const answer: Answer = {
-            name: getLocalHostnameDotLocal(),
-            type: "A",
-            data: getIpAddress()
-        }
-
         this.mdns.browser.query({
             questions: [
                 {
                     name:this.serviceName,
                     type: type
                 }
-            ],
-            answers: [answer]
+            ]
         });
     }
 

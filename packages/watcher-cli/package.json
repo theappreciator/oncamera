@@ -34,6 +34,7 @@
     "@oncamera/common": "file:../common",
     "@types/multicast-dns": "^7.2.1",
     "chalk": "^4.1.2",
+    "dns-packet": "^5.4.0",
     "log4js": "^6.7.1",
     "multicast-dns": "^7.2.5",
     "nodemon": "^2.0.20",

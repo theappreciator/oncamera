@@ -1,6 +1,7 @@
-import { MdnsDevice, MdnsListener } from '@oncamera/common';
+import { DataKeys, MdnsDevice, MdnsListener } from '@oncamera/common';
 import { WebcamStatus, MdnsServiceTypes, WebcamStatusServerResponse } from '@oncamera/common';
 import { getUrlFromWebcamStatusServer } from '@oncamera/common';
+import { TxtData } from "dns-packet";
 import * as log4js from "log4js";
 
 const WEBCAM_LISTEN_INTERVAL_MILLIS = 1000;
@@ -11,6 +12,7 @@ class WebcamStatusService {
 
 
     private mdnsListener;
+    private onChange: (status: WebcamStatus) => void;
 
 
     private url?: string;
@@ -19,19 +21,22 @@ class WebcamStatusService {
     private errorCount;
     private webcamStatusInterval?: NodeJS.Timeout;
 
-    public constructor() {
+    public constructor(onChange: (status: WebcamStatus) => void) {
+        this.onChange = onChange;
+
+        const heartbeat = async (device: MdnsDevice) => {
+            const data = await fetch(getUrlFromWebcamStatusServer(device));
+            const webcamStatusServerResponse: WebcamStatusServerResponse = await data.json();
+
+            if (!webcamStatusServerResponse?.status)
+                throw new Error("Heartbeat failed, invalid json");
+        };
 
         this.mdnsListener = new MdnsListener(
             MdnsServiceTypes.webcamStatus,
             "Webcam Status",
-            async (device: MdnsDevice) => {
-
-                const data = await fetch(getUrlFromWebcamStatusServer(device));
-                const webcamStatusServerResponse: WebcamStatusServerResponse = await data.json();
-
-                if (!webcamStatusServerResponse?.status)
-                    throw new Error("Heartbeat failed, invalid json");
-            }
+            heartbeat,
+            this.webcamStatusDataListener,
         );
 
         this.lastStatus = WebcamStatus.offline;
@@ -51,9 +56,32 @@ class WebcamStatusService {
         this.mdnsListener.stopInterval();
     }
 
+    private webcamStatusDataListener = (data: TxtData[]) => {
+        let dataToProcess: string[] = [];
 
+        data.forEach(d => {
+            if (Array.isArray(d)) {
+                d.forEach(d2 => {
+                    const dataString = Buffer.isBuffer(d2) ? d2.toString() : d2;
+                    dataToProcess.push(dataString);
+                });
+            }
+            else {
+                const dataString = Buffer.isBuffer(d) ? d.toString() : d;
+                dataToProcess.push(dataString);
+            }
+        });
 
-    public listenForStatusChanges(millis: number, listenerOnline: () => void, listenerOffline: () => void) {
+        dataToProcess.forEach(d => {
+            const keyVal = d.split('=');
+            if (keyVal[0] === DataKeys.webcamStatus) {
+                const status = keyVal[1] as WebcamStatus;
+                this.checkStatusChange(status, this.onChange);
+            }
+        });
+    }
+
+    public listenForStatusChanges(millis: number) {
 
         if (!this.url) {
             if (this.mdnsListener.devices.size > 0) {
@@ -64,7 +92,7 @@ class WebcamStatusService {
                 this.findWebcamStatusServer();
 
                 setTimeout(() => {
-                    this.listenForStatusChanges(millis, listenerOnline, listenerOffline);
+                    this.listenForStatusChanges(millis);
                 }, 5000);
             }
         }
@@ -74,21 +102,21 @@ class WebcamStatusService {
                 this.errorCount = 0;
                 this.isListening = true;
 
-                this.getRemoteWebcamStatusWrapper(millis, listenerOnline, listenerOffline);
+                this.getRemoteWebcamStatusWrapper(millis);
             }
         }
     }
 
-    private getRemoteWebcamStatusWrapper(millis: number, listenerOnline: () => void, listenerOffline: () => void) {
+    private getRemoteWebcamStatusWrapper(millis: number) {
         if (this.isListening) {
             this.webcamStatusInterval = setTimeout(() => {
-                this.getRemoteWebcamStatusWorker(millis, listenerOnline, listenerOffline);
-                this.getRemoteWebcamStatusWrapper(millis, listenerOnline, listenerOffline);
+                this.getRemoteWebcamStatusWorker(millis);
+                this.getRemoteWebcamStatusWrapper(millis);
             }, millis);
         }
     }
 
-    private getRemoteWebcamStatusWorker(millis: number, listenerOnline: () => void, listenerOffline: () => void) {  
+    private getRemoteWebcamStatusWorker(millis: number) {  
         if (!this.url) {
             return;
         }
@@ -100,16 +128,7 @@ class WebcamStatusService {
                 this.errorCount = 0;
             }
 
-            if (this.lastStatus !== status) {        
-                this.lastStatus = status;
-
-                if (status === WebcamStatus.online) {
-                    listenerOnline();
-                }
-                else if (status === WebcamStatus.offline) {
-                    listenerOffline();
-                }
-            }
+            this.checkStatusChange(status, this.onChange);
         })
         .catch(e => {
             this.errorCount++;
@@ -120,6 +139,14 @@ class WebcamStatusService {
             }
         });
 
+    }
+
+    private checkStatusChange = (status: WebcamStatus, onChange: (status: WebcamStatus) => void) => {
+        if (this.lastStatus !== status) {
+            this.lastStatus = status;
+
+            onChange(status);
+        }
     }
 
     private getRemoteWebcamStatus = async (url: string) => {

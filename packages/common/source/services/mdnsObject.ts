@@ -9,7 +9,9 @@ class MdnsObject {
     private mdnsBrowser: MulticastDNS;
 
     private constructor() {
-        this.mdnsBrowser = makeMdns();
+        this.mdnsBrowser = makeMdns({
+            loopback: false
+        });
     }
 
     public static get Instance() {

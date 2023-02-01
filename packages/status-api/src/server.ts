@@ -1,11 +1,11 @@
 import express, {Express, Request, Response} from "express";
 import Persist from "./persist";
-import { MdnsPublisher } from '@oncamera/common';
+import { DataKeys, MdnsPublisher } from '@oncamera/common';
 import { WebcamStatus, MdnsServiceTypes } from '@oncamera/common';
 
 const app: Express = express();
 const port = 9124;
-const PERSIST_STORE_KEY = "webcam.status"; // this probably needs to be moved back to status-api
+const PERSIST_STORE_KEY = "webcam.status";
 
 import * as log4js from "log4js";
 log4js.configure({
@@ -16,9 +16,18 @@ const logger = log4js.getLogger();
 
 const persist = Persist.Instance;
 
+const getCurrentBroadcastStatus = () => {
+    const data = [];
+    const status = persist.retrieve(PERSIST_STORE_KEY) || WebcamStatus.offline;
+    if (status) {
+        data.push(DataKeys.webcamStatus + "=" + status);
+    }
+    return data;
+}
 const publisher = new MdnsPublisher(
     MdnsServiceTypes.webcamStatus,
-    "Webcam Status Server"
+    "Webcam Status Server",
+    getCurrentBroadcastStatus
 );
 
 app.use(express.json());       // to support JSON-encoded bodies
@@ -45,6 +54,8 @@ app.post("/api/webcam/status", (req: Request, res: Response) => {
         if (oldStatus !== newStatus) {
             persist.save(PERSIST_STORE_KEY, newStatus);
             logger.info("Saved new status: ", persist.retrieve(PERSIST_STORE_KEY));
+
+            publisher.broadcastEvent([DataKeys.webcamStatus + "=" + newStatus]);
         }
     }
     

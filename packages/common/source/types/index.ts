@@ -5,30 +5,9 @@ export interface MdnsDevice {
     ip: string,
     port: number
 }
-  
-export interface MdnsRecordA {
-    name?: string,
-    type: 'A',
-    ttl?: number,
-    class?: string,
-    flush?: boolean,
-    data?: string
-}
 
-export interface MdnsRecordSrv {
-    name?: string,
-    type: 'SRV',
-    ttl?: number,
-    class?: string,
-    flush?: boolean,
-    data?: MdnsRecordSrvData
-}
-
-export interface MdnsRecordSrvData {
-    priority?: number,
-    weight?: number,
-    port?: number,
-    target?: string
+export enum DataKeys {
+    webcamStatus = "webcam.status"
 }
 
 export enum WebcamStatus {
