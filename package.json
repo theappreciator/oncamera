@@ -5,11 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install:all": "npm run install:common && npm run build:common && npm run install:cli && npm run install:api",
-    "install:common": "cd packages/common && npm install",
-    "install:cli": "cd packages/watcher-cli && npm install",
-    "install:api": "cd packages/status-api && npm install",
-    "build:common": "cd packages/common && npm run build",
+    "preinstall": "npm run clean:common",
+    "postinstall": "npm run build:common",
+    "build:common": "npm run build -w packages/common",
+    "build:api": "npm run build -w packages/status-api",
+    "build:cli": "npm run build -w packages/watcher-cli",
     "clean": "npm run clean -ws",
     "clean:common": "npm run clean -w packages/common",
     "clean:common:modules": "npm run clean:modules -w packages/common",
@@ -32,6 +32,8 @@
   },
   "homepage": "https://github.com/theappreciator/oncamera#readme",
   "workspaces": [
-    "./packages/*"
+    "./packages/common",
+    "./packages/status-api",
+    "./packages/watcher-cli"
   ]
 }

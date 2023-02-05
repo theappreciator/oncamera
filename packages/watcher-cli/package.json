@@ -7,7 +7,7 @@
     "test": "jest",
     "start": "node dist/index.js",
     "start:dev": "nodemon",
-    "build": "npm run clean && npm ci && tsc -p ./tsconfig.json",
+    "build": "npm run clean && tsc -p ./tsconfig.json",
     "build:check": "tsc -p ./tsconfig.cli.json --noEmit",
     "build:common": "npm run build",
     "clean": "rm -rf dist",
@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/theappreciator/oncamera#readme",
   "dependencies": {
-    "@oncamera/common": "file:../common",
+    "@oncamera/common": "^1.0.0",
     "@types/multicast-dns": "^7.2.1",
     "chalk": "^4.1.2",
     "dns-packet": "^5.4.0",
@@ -43,5 +43,8 @@
   },
   "devDependencies": {
     "jest": "^26.6.3"
+  },
+  "directories": {
+    "test": "tests"
   }
 }
