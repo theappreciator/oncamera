@@ -55,7 +55,10 @@ app.post("/api/webcam/status", (req: Request, res: Response) => {
             persist.save(PERSIST_STORE_KEY, newStatus);
             logger.info("Saved new status: ", persist.retrieve(PERSIST_STORE_KEY));
 
-            publisher.broadcastEvent([DataKeys.webcamStatus + "=" + newStatus]);
+            // TODO troublehsoot the following
+            // 1) why this isn't always recieved on on the listener
+            // 2) why this is sometimes received several seconds later on the listener
+            // publisher.broadcastEvent([DataKeys.webcamStatus + "=" + newStatus]);
         }
     }
     
