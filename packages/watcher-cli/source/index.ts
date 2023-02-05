@@ -1,4 +1,4 @@
-import { turnOffKeyLight, turnOnKeyLight, flashKeyLight } from './keylightController';
+import { turnOnLights, turnOffLights } from './keylightController';
 
 import { ElgatoLightService, WebcamStatusService } from './services';
 
@@ -14,25 +14,12 @@ const WEBCAM_LISTEN_INTERVAL_MILLIS = 1000;
 const elgatoLightService = new ElgatoLightService();
 elgatoLightService.findAndUpdateOnInterval(5000);
 
-
-const turnOnLights = () => {
-    for (const [key, light] of elgatoLightService.lights) {
-      turnOnKeyLight(light);
-    }
-}
-
-const turnOffLights = () => {
-    for (const [key, light] of elgatoLightService.lights) {
-      turnOffKeyLight(light);
-    };
-}
-
 const onChange = (status: WebcamStatus) => {
     if (status === WebcamStatus.online) {
-        turnOnLights();
+        turnOnLights(elgatoLightService.lights);
     }
     else if (status === WebcamStatus.offline) {
-        turnOffLights();
+        turnOffLights(elgatoLightService.lights);
     }
 }
 
