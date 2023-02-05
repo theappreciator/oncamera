@@ -12,6 +12,13 @@ Detects webcam on/off events, triggering Elgato Key Lights to turn on/eff.
 1. If status == offline then turn off lights
 
 
+## Why?
+My use case involved a locked down work computer that:
+1. Has the webcam
+1. Cannot send data to local 10.0.0.x network, so it can't communicate direct with the Elgato Key Lights
+1. Can receive data from the local 10.0.0.x network, so it can expose data for others to consume
+
+
 ## Includes
 - `Status cli` - for reacting to local webcam on/off events to set current status locally
 - `Status api` - for exposing local status to remote watchers
@@ -21,7 +28,39 @@ Detects webcam on/off events, triggering Elgato Key Lights to turn on/eff.
 ## Usage
 
 ### status-cli
+This will be used on the Mac that has camera.  The cli script recieves camera on/off events in order to exposte them through `status-api`
+1. Install OverSight for Mac: https://objective-see.org/products/oversight.html
+1. Configure it to execute webcam-event.sh on webcam on/off events
+![Oversight Execute screenshot](./public/oversight-execute_config.png)
+1. Turn on something that uses your camera, ex: Facetime, Quicktime Player -> New Movie Recording, Teams, or Zoom, and notice the OverSight toast
+![Oversight Camera Toast](./public/oversight-camera_alert.png)
+
 
 ### status-api
+Expose the webcam status and receives updates to the status.  The status-cli script will update the status through this api, and the remote watcher-cli script will poll this api for status.
+1. Install from the project root<br>`npm install`
+2. Build status-api, again from the project root<br>`npm run build:api`
+3. Run the status-api from `./packages/status-api`<br>`npm run start`
+
+#### Optional - Run within pm2
+1. Install pm2: https://www.npmjs.com/package/pm2<br>`npm install pm2 -g`
+1. Navigate to `./packages/status-api`
+1. Build `status-api`
+1. Add to pm2<br>`pm2 start dist/index.js --name webcam-status-api`
+
+
 
 ### watcher-cli
+Polls a remote status-api for current status and trigger changes to light status due to webcam stats.
+1. Install from the project root<br>`npm install`
+2. Build watcher-cli, again from the project root<br>`npm run build:cli`
+3. Run the watcher-cli from `./packages/watcher-cli`<br>`npm run start`
+
+#### Optional - Run within pm2
+1. Install pm2: https://www.npmjs.com/package/pm2<br>`npm install pm2 -g`
+1. Navigate to `./packages/watcher-cli`
+1. Build `watcher-cli`
+1. Add to pm2<br>`pm2 start dist/index.js --name webcam-watcher-cli`
+
+#### Optional - Local Development
+1. Run with `npm run start:dev`
