@@ -85,7 +85,14 @@ Polls a remote status-api for current status and trigger changes to light status
 ## Examples logs
 
 ### status-api
-
+```
+[2023-02-06T13:13:06.893] [INFO] default - Server running on port 9124
+[2023-02-06T13:13:06.895] [INFO] default - Webcam Status Server MDNS Service Publisher ready
+[2023-02-06T13:15:12.465] [INFO] default - Status - old: undefined new: webcam.status.online
+[2023-02-06T13:15:12.466] [INFO] default - Saved new status:  webcam.status.online
+[2023-02-06T13:15:19.377] [INFO] default - Status - old: webcam.status.online new: webcam.status.offline
+[2023-02-06T13:15:19.378] [INFO] default - Saved new status:  webcam.status.offline
+```
 
 ### watcher-cli
 ```
