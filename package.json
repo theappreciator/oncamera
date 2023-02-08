@@ -35,5 +35,10 @@
     "./packages/common",
     "./packages/status-api",
     "./packages/watcher-cli"
-  ]
+  ],
+  "devDependencies": {
+    "@types/babel__core": "^7.20.0",
+    "@types/jest": "^29.4.0",
+    "ts-jest": "^29.0.5"
+  }
 }

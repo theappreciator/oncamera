@@ -4,7 +4,7 @@
   "description": "Turns on/off Elgato Key Lights from remote webcam on/off events",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --config ../../jest.config.js",
     "build": "npx tsc",
     "start": "npm run build && node dist/server.js",
     "build:check": "tsc -p ./tsconfig.api.json --noEmit",
@@ -32,12 +32,14 @@
   "dependencies": {
     "@oncamera/common": "^1.0.0",
     "@types/express": "^4.17.15",
-    "@types/node": "^18.11.18",
+    "@types/node": "^18.13.0",
     "dns-packet": "^5.4.0",
     "express": "^4.18.2",
     "typescript": "^4.9.4"
   },
   "devDependencies": {
-    "jest": "^26.6.3"
+    "@types/babel__core": "^7.20.0",
+    "@types/jest": "^29.4.0",
+    "ts-jest": "^29.0.5"
   }
 }

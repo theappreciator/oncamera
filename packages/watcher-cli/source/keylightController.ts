@@ -55,42 +55,41 @@ async function changeLightStatusAtUrl(light: MdnsDevice, lightStatus: 0 | 1) {
         }
     }).catch(e => {
         logger.error("Error turning " + lightStatusDisplay + " light at " + getUrlFromLight(light), e);
-    });
+    })
 
-    const lightResponse: (ElgatoKeyLightResponse | void) = await data?.json()
-        .catch(e => {
-            logger.error("Error converting json from light at " + getUrlFromLight(light), e);
-        });
+    if (!data) {
+        logger.error("Error getting data from light at " + getUrlFromLight(light), data);
+    }
+    else {
+        const lightResponse: (ElgatoKeyLightResponse | void) = await data.json()
+            .catch(e => {
+                logger.error("Error converting json from light at " + getUrlFromLight(light), e);
+            });
 
-    return lightResponse;
+        return lightResponse;
+    }
+
+    return;
 }
 
 async function flashLight(light: MdnsDevice) {
-    const turnedOn = turnOnLight(light);
 
-    turnedOn.then(() => {
-        logger.info("Turned on:", light.host, new Date());
-
-        return delay(500).then(() => {
-            logger.info("Turning off", light.host, new Date());
-            return turnOffLight(light);
-        });
-    }).then(() => {
-        logger.info("Turned off", light.host, new Date());
-
-        return delay(350).then(() => {
-            return turnOnLight(light);
-        });
-    }).then(() => {
-        logger.info("Turned on:", light.host, new Date());
-
-        return delay(500).then(() => {
-            logger.info("Turning off", light.host, new Date());
-            return turnOffLight(light);
+    const returnVal = turnOnLight(light)
+    .then((r1) => {
+        return delay(500, [r1]).then(r1 => {
+            return turnOffLight(light)
+            .then((r2) => {
+                return delay(350, r1.concat(r2)).then(ra => {
+                    return turnOnLight(light)
+                    .then((r3) => {
+                        return ra.concat(r3);
+                    });
+                });
+            });
         });
     });
 
-    return;
+    return returnVal;
 }
 
 export {
