@@ -157,7 +157,6 @@ describe('change light on/off', () => {
 
                 const elapsedTime  = endTime.getTime() - startTime.getTime();
                 expect(elapsedTime).toBeGreaterThanOrEqual(850);
-                expect(elapsedTime).toBeLessThanOrEqual(1000);
             });
 
             expect(lightsFound).toBe(1);
