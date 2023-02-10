@@ -4,7 +4,8 @@
   "description": "[![Build Status][circleci-badge]][circleci-link]",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: run tests from within their package roots\" && exit 1",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
     "preinstall": "npm run clean:common",
     "postinstall": "npm run build:common",
     "build:common": "npm run build -w packages/common",

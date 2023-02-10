@@ -4,7 +4,8 @@
   "description": "Turns on/off Elgato Key Lights from remote webcam on/off events",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest",
+    "test": "cd ../../ && npm run test common",
+    "test:coverage": "cd ../../ && npm run test:coverage -- common --collectCoverageFrom=./packages/common/source/**/*.ts",
     "build": "npm run clean && tsc -p ./tsconfig.json",
     "build:check": "tsc -p ./tsconfig.cli.json --noEmit",
     "build:common": "npm run build",

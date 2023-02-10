@@ -4,7 +4,8 @@
   "description": "Turns on/off Elgato Key Lights from remote webcam on/off events",
   "main": "index.js",
   "scripts": {
-    "test": "jest --config ../../jest.config.js",
+    "test": "cd ../../ && npm run test status-api",
+    "test:coverage": "cd ../../ && npm run test:coverage -- status-api --collectCoverageFrom=./packages/status-api/source/**/*.ts",
     "build": "npx tsc",
     "start": "npm run build && node dist/server.js",
     "build:check": "tsc -p ./tsconfig.api.json --noEmit",
