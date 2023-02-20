@@ -1,6 +1,6 @@
 import { MdnsDevice } from "@oncamera/common";
-import { turnOnLights, turnOffLights, flashLight } from "../source/keylightController";
-import { ElgatoKeyLightResponse } from "../source/types";
+import { turnOnLights, turnOffLights, flashLight } from "../../source/controllers/keylightController";
+import { ElgatoKeyLightResponse } from "../../source/types";
 
 
 
@@ -26,8 +26,7 @@ const onElgatoLight: ElgatoKeyLightResponse = {
     ]
 }
 
-describe('change light on/off', () => {
-
+describe('keylightController Happy Path', () => {
     describe("change to on", () => {
         beforeEach(() => {
             jest.spyOn(global, "fetch")
@@ -260,4 +259,4 @@ describe("Errors", () => {
             expect(lightsFound).toBe(1);
         })
     });
-})
+});

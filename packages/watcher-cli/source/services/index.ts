@@ -1,7 +1,11 @@
-import WebcamStatusService from "./webcamStatusService";
-import ElgatoLightService from './elgatoLightService';
+import ElgatoLightMdnsListenerService from './elgatoLightMdnsListenerService';
+import WebcamStatusServerMdnsListenerService from "./webcamStatusServerMdnsListenerService";
+import WebcamStatusServerApiListenerService from './webcamStatusServerApiListenerService';
+import WebcamStatusServerMdnsApiListenerService from './webcamStatusServerMdnsApiListenerService';
 
 export {
-    WebcamStatusService,
-    ElgatoLightService
+    ElgatoLightMdnsListenerService,
+    WebcamStatusServerMdnsListenerService,
+    WebcamStatusServerApiListenerService,
+    WebcamStatusServerMdnsApiListenerService
 }

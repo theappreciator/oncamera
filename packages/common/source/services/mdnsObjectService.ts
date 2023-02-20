@@ -1,10 +1,13 @@
 import makeMdns, { MulticastDNS } from 'multicast-dns';
 
 
+export interface IMdnsObjectService {
+    browser: makeMdns.MulticastDNS
+}
 
-class MdnsObject {
+class BaseMdnsObjectService implements IMdnsObjectService  {
 
-    private static _instance: MdnsObject;
+    private static _instance: IMdnsObjectService;
 
     private mdnsBrowser: MulticastDNS;
 
@@ -23,4 +26,4 @@ class MdnsObject {
     }
 }
 
-export default MdnsObject
+export default BaseMdnsObjectService

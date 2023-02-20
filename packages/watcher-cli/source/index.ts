@@ -1,9 +1,8 @@
-import { turnOnLights, turnOffLights } from './keylightController';
-
-import { ElgatoLightService, WebcamStatusService } from './services';
+import { turnOnLights, turnOffLights } from './controllers/keylightController';
+import { ElgatoLightMdnsListenerService, WebcamStatusServerMdnsApiListenerService, WebcamStatusServerMdnsListenerService, WebcamStatusServerApiListenerService } from './services';
+import { BaseMdnsObjectService, WebcamStatus } from '@oncamera/common';
 
 import * as log4js from "log4js";
-import { WebcamStatus } from '@oncamera/common';
 log4js.configure({
   appenders: { normal: { type: "stdout" } },
   categories: { default: { appenders: ["normal"], level: "info" } },
@@ -11,18 +10,22 @@ log4js.configure({
 
 const WEBCAM_LISTEN_INTERVAL_MILLIS = 1000;
 
-const elgatoLightService = new ElgatoLightService();
+const mdnsObjectService = BaseMdnsObjectService.Instance;
+const webcamApiListenerService = new WebcamStatusServerApiListenerService();
+const webcamMdnsListenerService = new WebcamStatusServerMdnsListenerService(mdnsObjectService);
+
+const elgatoLightService = new ElgatoLightMdnsListenerService(mdnsObjectService);
 elgatoLightService.findAndUpdateOnInterval(5000);
 
-const onChange = (status: WebcamStatus) => {
+const onChange = async (status: string) => {
     if (status === WebcamStatus.online) {
-        turnOnLights(elgatoLightService.lights);
+        await turnOnLights(elgatoLightService.devices);
     }
     else if (status === WebcamStatus.offline) {
-        turnOffLights(elgatoLightService.lights);
+        await turnOffLights(elgatoLightService.devices);
     }
 }
 
 // be sure to send back a version number
-const webcamStatusService = new WebcamStatusService(onChange);
-webcamStatusService.listenForStatusChanges(WEBCAM_LISTEN_INTERVAL_MILLIS);
+const webcamStatusServerService = new WebcamStatusServerMdnsApiListenerService(webcamMdnsListenerService, webcamApiListenerService);
+webcamStatusServerService.listenForValueChanges(onChange, WEBCAM_LISTEN_INTERVAL_MILLIS);

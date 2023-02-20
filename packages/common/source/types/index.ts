@@ -16,7 +16,8 @@ export enum WebcamStatus {
 }
 
 export enum MdnsServiceTypes {
-    webcamStatus = '_webcam_status._tcp.local'
+    webcamStatus = '_webcam_status._tcp.local',
+    elgatoLight = '_elg._tcp.local'
 }
 
 export interface WebcamStatusServerResponse {

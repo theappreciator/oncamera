@@ -1,7 +1,16 @@
-import MdnsListener from "./mdnsListener";
-import MdnsPublisher from "./mdnsPublisher";
+import BaseMdnsListenerService from "./mdnsListenerService";
+import BaseMdnsPublisherService from "./mdnsPublisherService";
+import BaseMdnsObjectService from "./mdnsObjectService";
+import BaseApiListenerService from "./apiListenerService";
+
+export * from "./mdnsListenerService";
+export * from "./mdnsPublisherService";
+export * from "./mdnsObjectService";
+export * from "./apiListenerService";
 
 export {
-    MdnsListener,
-    MdnsPublisher
+    BaseMdnsListenerService,
+    BaseMdnsPublisherService,
+    BaseMdnsObjectService,
+    BaseApiListenerService
 }

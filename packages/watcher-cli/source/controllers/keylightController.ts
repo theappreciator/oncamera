@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { delay, getUrlFromLight, MdnsDevice } from '@oncamera/common';
 import * as log4js from "log4js";
-import { ElgatoKeyLightResponse } from './types';
+import { ElgatoKeyLightResponse } from '../types';
 
 
 

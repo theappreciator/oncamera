@@ -1,33 +1,48 @@
 import chalk from 'chalk';
-import MdnsObject from './mdnsObject';
-import { Answer } from "dns-packet";
+import { IMdnsObjectService } from './mdnsObjectService';
 import { getIpAddress, getLocalHostnameDotLocal, getLocalHostnameDotLocalNormalized } from '../utils';
+import { Answer } from "dns-packet";
 
 import * as log4js from "log4js";
 const logger = log4js.getLogger();
 
-class MdnsPublisher {
+export interface IMdnsPublisherService {
+    broadcastEvent(data: string[]): void,
+    destroy(): void
+}
+
+abstract class BaseMdnsPublisherService implements IMdnsPublisherService {
     private serviceName:string;
-    private displayName?: string;
-    private mdns: MdnsObject;
+    private displayName: string;
+    private mdns: IMdnsObjectService;
     private isReady = false;
 
-    public constructor(serviceName: string, displayName: string, getTxtData: () => string[] = () => []) {
+    public constructor(
+        mdnsObject: IMdnsObjectService,
+        serviceName: string,
+        displayName: string
+    ) {
+        this.mdns = mdnsObject;
+
         this.serviceName = serviceName;
         this.displayName = displayName;
 
-        this.mdns = MdnsObject.Instance;
-
-        this.setOnQuery(getTxtData);
+        this.setOnQuery();
         this.setOnReady(this.displayName);
     }  
 
-    private setOnQuery(getTxtData: () => string[]) {
+    protected abstract getData(): string[];
+
+    public destroy() {        
+        this.mdns.browser.destroy();
+    }
+
+    private setOnQuery() {
         this.mdns.browser.on("query", (query) => {
             const matchedQuery = query.questions.find(q => q.name === this.serviceName && q.type === 'PTR');
 
             if (matchedQuery) {
-                const recordTxt: Answer[] = this.getServerTxt(getTxtData());
+                const recordTxt: Answer[] = this.getServerTxt(this.getData());
                 this.sendServerResponse(recordTxt);
             }
         });
@@ -65,7 +80,7 @@ class MdnsPublisher {
         return recordTxt;
     }
 
-    private sendServerResponse(recordTxt: Answer[] = []) {
+    private sendServerResponse(recordTxt: Answer[]) {
         const answers: Answer[] = [];
         answers.push(this.getServerPtr());
 
@@ -74,9 +89,23 @@ class MdnsPublisher {
         additionals.push(this.getServerSrv());
         additionals.push(...recordTxt);
 
-        this.mdns.browser.respond({
-            answers: answers,
-            additionals: additionals
+        return new Promise((rs, rj) => {
+            const callback = (error: Error | null, bytes?: number | undefined) => {
+                if (error) {
+                    rj(error);
+                }
+                rs(bytes);
+            };
+
+            const returnObj = {
+                answers,
+                additionals
+            }
+
+            this.mdns.browser.respond(
+                returnObj,
+                callback
+            );
         });
     }
 
@@ -93,22 +122,22 @@ class MdnsPublisher {
         };
     }
 
-    private setOnReady(browserName?: string) {
+    private setOnReady(browserName: string) {
         this.mdns.browser.on("ready", () => {
-            logger.info(chalk.bgGreen.black.bold(`${browserName ? browserName + ' ' : ''}MDNS Service Publisher ready`));
-
+            logger.info(chalk.bgGreen.black.bold(`${browserName} MDNS Service Publisher ready`));
+            
             this.isReady = true;
         })
     }
 
-    public broadcastEvent(data: string[]) {
+    public async broadcastEvent(data: string[]) {
         logger.info("Broadcasting event data", data);
 
         const recordTxt: Answer[] = this.getServerTxt(data);
 
-        this.sendServerResponse(recordTxt);
+        return this.sendServerResponse(recordTxt);
     }
     
 }
 
-export default MdnsPublisher;
+export default BaseMdnsPublisherService;

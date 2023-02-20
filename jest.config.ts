@@ -20,6 +20,10 @@ const config: Config = {
   coverageReporters: [
     'json', 'lcov', 'html', 'text', 'text-summary'
   ],
+  coveragePathIgnorePatterns: [
+    '<rootDir>/packages/common/source/mocks',
+    '<rootDir>/packages/watcher-cli/source/index.ts'
+  ],
   projects: [
     {
       displayName: 'common',
@@ -31,7 +35,11 @@ const config: Config = {
         '<rootDir>/packages/common/tests/**/*.test.ts',
       ],
       testPathIgnorePatterns: [
-        '<rootDir>/packages/common/dist'
+        '<rootDir>/packages/common/dist',
+        '<rootDir>/packages/common/source/mocks'
+      ],
+      coveragePathIgnorePatterns: [
+        '<rootDir>/packages/common/source/mocks'
       ]
     },
     {
@@ -44,8 +52,12 @@ const config: Config = {
         '<rootDir>/packages/watcher-cli/tests/**/*.test.ts',
       ],
       testPathIgnorePatterns: [
-        '<rootDir>/packages/watcher-cli/dist'
+        '<rootDir>/packages/watcher-cli/dist',
+        '<rootDir>/packages/watcher-cli/source/index.ts'
       ],
+      coveragePathIgnorePatterns: [
+        '<rootDir>/packages/watcher-cli/source/index.ts'
+      ]
     },
     {
       displayName: 'status-api',
