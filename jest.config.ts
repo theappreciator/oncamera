@@ -12,17 +12,16 @@ const config: Config = {
     '<rootDir>/node_modules'
   ],
   moduleFileExtensions: ['ts', 'js'],
+  collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
   collectCoverageFrom: [
-    '<rootDir>/packages/**/src/**/*.ts',
-    '<rootDir>/packages/**/source/**/*.ts'
+    '<rootDir>/packages/**/source/**/*.ts',
+    '!<rootDir>/packages/common/source/mocks/**/*',
+    '!<rootDir>/packages/watcher-cli/source/index.ts',
+    '!<rootDir>/packages/status-api/source/server.ts'
   ],
   coverageReporters: [
     'json', 'lcov', 'html', 'text', 'text-summary'
-  ],
-  coveragePathIgnorePatterns: [
-    '<rootDir>/packages/common/source/mocks',
-    '<rootDir>/packages/watcher-cli/source/index.ts'
   ],
   projects: [
     {
@@ -71,6 +70,9 @@ const config: Config = {
       testPathIgnorePatterns: [
         '<rootDir>/packages/status-api/dist'
       ],
+      coveragePathIgnorePatterns: [
+        '<rootDir>/packages/status-api/source/server.ts'
+      ]
     }
   ]
 }

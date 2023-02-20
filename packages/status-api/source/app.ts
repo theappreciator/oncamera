@@ -1,34 +1,19 @@
 import express, {Express, Request, Response} from "express";
-import Persist from "./persist";
-import { DataKeys, MdnsPublisher } from '@oncamera/common';
+import Persist from "./services/persistService";
+import { BaseMdnsObjectService, DataKeys } from '@oncamera/common';
 import { WebcamStatus, MdnsServiceTypes } from '@oncamera/common';
-
-const app: Express = express();
-const port = 9124;
-const PERSIST_STORE_KEY = "webcam.status";
-
+import { StatusServerMdnsPublisherService } from "./services";
+import { PERSIST_STORE_KEY } from "./constants";
 import * as log4js from "log4js";
-log4js.configure({
-  appenders: { normal: { type: "stdout" } },
-  categories: { default: { appenders: ["normal"], level: "info" } },
-});
 const logger = log4js.getLogger();
+
+
 
 const persist = Persist.Instance;
 
-const getCurrentBroadcastStatus = () => {
-    const data = [];
-    const status = persist.retrieve(PERSIST_STORE_KEY) || WebcamStatus.offline;
-    if (status) {
-        data.push(DataKeys.webcamStatus + "=" + status);
-    }
-    return data;
-}
-const publisher = new MdnsPublisher(
-    MdnsServiceTypes.webcamStatus,
-    "Webcam Status Server",
-    getCurrentBroadcastStatus
-);
+const app: Express = express();
+const port = 9124;
+
 
 app.use(express.json());       // to support JSON-encoded bodies
 app.use(express.urlencoded({ extended: true }));
@@ -66,6 +51,9 @@ app.post("/api/webcam/status", (req: Request, res: Response) => {
     res.send({status});
 })
 
-app.listen(port, () => {
+const appServer = app.listen(port, () => {
     logger.info("Server running on port " + port);
 })
+
+
+module.exports = appServer;

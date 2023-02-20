@@ -15,11 +15,15 @@ class Persist {
     }
 
     public save(key: string, value: string) {
-        this.store.set(key, value);
+        this.store.set(key.toLowerCase(), value);
     }
 
     public retrieve(key: string) {
-        return this.store.get(key);
+        return this.store.get(key.toLowerCase());
+    }
+
+    public clearAll() {
+        this.store.clear();
     }
 }
 
