@@ -1,3 +1,5 @@
+import "reflect-metadata";
+import { container, Lifecycle } from "tsyringe";
 import { getMockQuery, MdnsServiceTypes, MockMdnsObjectService } from "@oncamera/common";
 import { StatusServerMdnsPublisherService } from "../../source/services";
 import { flushPromises } from "../testingUtils";
@@ -5,15 +7,23 @@ import { flushPromises } from "../testingUtils";
 
 
 describe("StatusServerMdnsPublisherService", () => {
-    it ("should be able to provide data", async () => {
-        const mockedObjectService = new MockMdnsObjectService();
+    beforeAll(() => {
+        container.register(
+            "IMdnsObjectService",
+            { useClass: MockMdnsObjectService },
+            { lifecycle: Lifecycle.Singleton }
+        );
+    });
 
-        const publisher = new StatusServerMdnsPublisherService(mockedObjectService);
-        mockedObjectService.mockReady();
+    it ("should be able to provide data", async () => {
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
+
+        const publisher = container.resolve(StatusServerMdnsPublisherService);
+        mockMdnsObjectService.mockReady();
 
         expect.assertions(2);
         const mockListenerQuery: any = getMockQuery(MdnsServiceTypes.webcamStatus);
-        mockedObjectService.mockQuery(mockListenerQuery);
+        mockMdnsObjectService.mockQuery(mockListenerQuery);
         await flushPromises();
         expect(true).toBe(true);
         

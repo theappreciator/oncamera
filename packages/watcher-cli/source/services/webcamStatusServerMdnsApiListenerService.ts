@@ -1,5 +1,6 @@
 import { BaseApiListenerService, BaseMdnsListenerService, getUrlFromWebcamStatusServer, IApiListenerService, IMdnsListenerService, MdnsDevice } from "@oncamera/common";
 import chalk from "chalk";
+import { container, inject, injectable} from "tsyringe";
 import * as log4js from "log4js";
 const logger = log4js.getLogger();
 
@@ -17,19 +18,24 @@ export interface IMdnsApiListenerService {
 
 
 
+@injectable()
 class WebcamStatusServerMdnsApiListenerService implements IMdnsApiListenerService {
-
-    private mdnsListenerService: IMdnsListenerService;
-    private apiListenerService: IApiListenerService;
 
     private findWebcamServerMillis: number = 5000;
     private onChange: (status: string) => Promise<void> = async (status) => {};
 
     private isReady = false;
     private isWaitingForReady = false;
+
+    private mdnsListenerService: IMdnsListenerService;
+    private apiListenerService: IApiListenerService;
     
-    public constructor(mdnsListenerServer: IMdnsListenerService, apiListenerService: IApiListenerService) {
-        this.mdnsListenerService = mdnsListenerServer;
+    public constructor(
+        @inject("IMdnsListenerService") mdnsListenerService: IMdnsListenerService,
+        @inject("IApiListenerService") apiListenerService: IApiListenerService
+    ) {
+
+        this.mdnsListenerService = mdnsListenerService;
         this.apiListenerService = apiListenerService;
 
         this.mdnsListenerService.on("connected", async (device) => this.onConnectedToMdns(device));

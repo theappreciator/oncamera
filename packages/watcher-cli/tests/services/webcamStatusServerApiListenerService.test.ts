@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { mockWebcamDevice, mockWebcamOfflineResponse, mockWebcamOnlineResponse } from "@oncamera/common";
 import { WebcamStatusServerApiListenerService } from "../../source/services";
 import { flushPromises } from "../testingUtils";

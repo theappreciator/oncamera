@@ -1,6 +1,7 @@
 import { getUrlFromLight, MdnsDevice, IMdnsListenerService, BaseMdnsListenerService, IMdnsObjectService, MdnsServiceTypes, WebcamStatusServerResponse, getUrlFromWebcamStatusServer } from '@oncamera/common/';
 import { TxtData } from 'dns-packet';
 import { ElgatoKeyLightResponse } from '../types';
+import { container, inject, injectable} from "tsyringe";
 
 
 
@@ -9,11 +10,12 @@ const WEBCAM_STATUS_SERVER_DISPLAY_NAME = 'Webcam Status Server';
 
 
 
+@injectable()
 class WebcamStatusServerMdnsListenerService extends BaseMdnsListenerService implements IMdnsListenerService {
 
-    public constructor(mdnsObjectService: IMdnsObjectService) {
+    public constructor(@inject("IMdnsObjectService") mdns: IMdnsObjectService) {
         super(
-            mdnsObjectService,
+            mdns,
             WEBCAM_STATUS_SERVER_SERVICE_NAME,
             WEBCAM_STATUS_SERVER_DISPLAY_NAME
         );

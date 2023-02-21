@@ -1,10 +1,10 @@
 
 
-class Persist {
+class PersistService {
 
     private store: Map<string, string>;
 
-    private static _instance: Persist;
+    private static _instance: PersistService;
 
     private constructor() {
         this.store = new Map();
@@ -27,4 +27,4 @@ class Persist {
     }
 }
 
-export default Persist;
+export default PersistService;

@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { delay } from "../../source";
 
 describe(("delay"), () => {

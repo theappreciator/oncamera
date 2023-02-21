@@ -1,3 +1,5 @@
+import "reflect-metadata";
+import { container, Lifecycle } from "tsyringe";
 import { getMockResponse, MdnsServiceTypes, MockMdnsObjectService, mockNotJsonResponse, mockNotWebcamResponse, mockWebcamOnlineResponse } from '@oncamera/common';
 import { ElgatoLightMdnsListenerService } from '../../source/services';
 import { flushPromises } from '../testingUtils';
@@ -5,17 +7,23 @@ import { flushPromises } from '../testingUtils';
 
 describe("ElgatoLightService", () => {
 
+    beforeAll(() => {
+        container.register(
+            "IMdnsObjectService",
+            { useClass: MockMdnsObjectService },
+            { lifecycle: Lifecycle.Singleton }
+          );
+    });
+
     beforeEach(() => {
         jest.resetAllMocks();
         jest.clearAllTimers();
         jest.useFakeTimers();
     })
 
-    
-
     it ("should findOnce", () => {
-        const mockedObjectService = new MockMdnsObjectService();
-        const lightService = new ElgatoLightMdnsListenerService(mockedObjectService);
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
+        const lightService = container.resolve(ElgatoLightMdnsListenerService);
 
         expect(() => lightService.findOnce()).not.toThrow();
 
@@ -23,8 +31,8 @@ describe("ElgatoLightService", () => {
     });
 
     it ("should findAndUpdateOnInterval", () => {
-        const mockedObjectService = new MockMdnsObjectService();
-        const lightService = new ElgatoLightMdnsListenerService(mockedObjectService);
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
+        const lightService = container.resolve(ElgatoLightMdnsListenerService);
 
         expect(() => lightService.findAndUpdateOnInterval(1000)).not.toThrow();
         expect(() => lightService.stopFindingInterval()).not.toThrow();
@@ -33,35 +41,35 @@ describe("ElgatoLightService", () => {
     });
 
     it("should find on an interval once", async () => {
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new ElgatoLightMdnsListenerService(mockMdnsObjectService);
+        const lightService = container.resolve(ElgatoLightMdnsListenerService);
         mockMdnsObjectService.mockReady();
 
-        webcamListenerService.findAndUpdateOnInterval(1000);
+        lightService.findAndUpdateOnInterval(1000);
         await flushPromises();
 
         expect(spyQuery).toHaveBeenCalledTimes(1);
 
-        expect(() => webcamListenerService.destroy()).not.toThrow();
+        expect(() => lightService.destroy()).not.toThrow();
     });
 
     it("should find on an interval twice", async () => {
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new ElgatoLightMdnsListenerService(mockMdnsObjectService);
+        const lightService = container.resolve(ElgatoLightMdnsListenerService);
         mockMdnsObjectService.mockReady();
 
-        webcamListenerService.findAndUpdateOnInterval(1000);
+        lightService.findAndUpdateOnInterval(1000);
         await flushPromises();
         jest.runOnlyPendingTimers();
         await flushPromises();
 
         expect(spyQuery).toHaveBeenCalledTimes(2);
 
-        expect(() => webcamListenerService.destroy()).not.toThrow();
+        expect(() => lightService.destroy()).not.toThrow();
     });
 
     it("Should respond and run a heartbeat", async () => {
@@ -75,15 +83,15 @@ describe("ElgatoLightService", () => {
                 }
             ) as jest.Mock);
             
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new ElgatoLightMdnsListenerService(mockMdnsObjectService);
+        const lightService = container.resolve(ElgatoLightMdnsListenerService);
         const onConnected = jest.fn();
-        webcamListenerService.on("connected", onConnected);
+        lightService.on("connected", onConnected);
         mockMdnsObjectService.mockReady();
 
-        webcamListenerService.findAndUpdateOnInterval(1000);
+        lightService.findAndUpdateOnInterval(1000);
         await flushPromises();
 
         expect(spyQuery).toHaveBeenCalledTimes(1);
@@ -94,7 +102,7 @@ describe("ElgatoLightService", () => {
 
         expect(onConnected).toHaveBeenCalledTimes(1);
 
-        expect(() => webcamListenerService.destroy()).not.toThrow();
+        expect(() => lightService.destroy()).not.toThrow();
     });
 
     it("Should respond and fail a heartbeat from json response that doesnt fit", async () => {
@@ -110,19 +118,19 @@ describe("ElgatoLightService", () => {
         
         jest.useFakeTimers();
             
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new ElgatoLightMdnsListenerService(mockMdnsObjectService);
+        const lightService = container.resolve(ElgatoLightMdnsListenerService);
         const onConnected = jest.fn();
         const onDisconnected = jest.fn();
         const onReady = jest.fn();
-        webcamListenerService.on("ready", onReady);
-        webcamListenerService.on("connected", onConnected);
-        webcamListenerService.on("disconnected", onDisconnected);
+        lightService.on("ready", onReady);
+        lightService.on("connected", onConnected);
+        lightService.on("disconnected", onDisconnected);
         mockMdnsObjectService.mockReady();
 
-        webcamListenerService.findAndUpdateOnInterval(1000);
+        lightService.findAndUpdateOnInterval(1000);
         await flushPromises();
 
         expect(spyQuery).toHaveBeenCalledTimes(1);
@@ -136,7 +144,7 @@ describe("ElgatoLightService", () => {
         expect(onConnected).toHaveBeenCalledTimes(1);
         expect(onDisconnected).toHaveBeenCalledTimes(1);
 
-        expect(() => webcamListenerService.destroy()).not.toThrow();
+        expect(() => lightService.destroy()).not.toThrow();
     });
 
     it("Should respond and fail a heartbeat from response that isn't json", async () => {
@@ -146,17 +154,17 @@ describe("ElgatoLightService", () => {
                 }
             ) as jest.Mock);
             
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new ElgatoLightMdnsListenerService(mockMdnsObjectService);
+        const lightService = container.resolve(ElgatoLightMdnsListenerService);
         const onConnected = jest.fn();
         const onDisconnected = jest.fn();
-        webcamListenerService.on("connected", onConnected);
-        webcamListenerService.on("disconnected", onDisconnected);
+        lightService.on("connected", onConnected);
+        lightService.on("disconnected", onDisconnected);
         mockMdnsObjectService.mockReady();
 
-        webcamListenerService.findAndUpdateOnInterval(1000);
+        lightService.findAndUpdateOnInterval(1000);
         await flushPromises();
 
         expect(spyQuery).toHaveBeenCalledTimes(1);
@@ -170,7 +178,7 @@ describe("ElgatoLightService", () => {
         expect(onConnected).toHaveBeenCalledTimes(1);
         expect(onDisconnected).toHaveBeenCalledTimes(1);
 
-        expect(() => webcamListenerService.destroy()).not.toThrow();
+        expect(() => lightService.destroy()).not.toThrow();
     });
 
 });

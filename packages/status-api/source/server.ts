@@ -1,7 +1,7 @@
-import { BaseMdnsObjectService } from '@oncamera/common';
+import "reflect-metadata";
+import { container } from "tsyringe";
 import { StatusServerMdnsPublisherService } from "./services";
-
-
+import iocRegister from "./ioc.config";
 
 import * as log4js from "log4js";
 log4js.configure({
@@ -12,5 +12,6 @@ const logger = log4js.getLogger();
 
 
 
+iocRegister();
 const appServer = require("./app");
-const publisher = new StatusServerMdnsPublisherService(BaseMdnsObjectService.Instance);
+const publisher = container.resolve(StatusServerMdnsPublisherService);

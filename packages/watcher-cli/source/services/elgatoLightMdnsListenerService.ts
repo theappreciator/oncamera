@@ -1,6 +1,7 @@
 import { getUrlFromLight, MdnsDevice, IMdnsListenerService, BaseMdnsListenerService, IMdnsObjectService } from '@oncamera/common/';
 import { TxtData } from 'dns-packet';
 import { ElgatoKeyLightResponse } from '../types';
+import { inject, injectable } from "tsyringe";
 
 
 
@@ -9,11 +10,12 @@ const ELGATO_LIGHT_DISPLAY_NAME = 'Elgato Key Light';
 
 
 
+@injectable()
 class ElgatoLightMdnsListenerService extends BaseMdnsListenerService implements IMdnsListenerService {
 
-    public constructor(mdnsObjectService: IMdnsObjectService) {
+    public constructor(@inject("IMdnsObjectService") mdns: IMdnsObjectService) {
         super(
-            mdnsObjectService,
+            mdns,
             ELGATO_LIGHT_SERVICE_NAME,
             ELGATO_LIGHT_DISPLAY_NAME
         );

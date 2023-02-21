@@ -1,3 +1,5 @@
+import "reflect-metadata";
+import { container, Lifecycle } from "tsyringe";
 import { getMockResponse, MockApiListenerService, MockMdnsListenerService, MockMdnsObjectService, mockNotJsonResponse, mockWebcamOnlineResponse } from '@oncamera/common';
 import { flushPromises } from '@oncamera/common/tests/testingUtils';
 import { WebcamStatusServerMdnsApiListenerService } from '../../source/services';
@@ -5,6 +7,20 @@ import { WebcamStatusServerMdnsApiListenerService } from '../../source/services'
 
 
 describe("WebcamStatusServerMdnsApiListenerService", () => {
+
+    beforeAll(() => {
+        container.register(
+            "IMdnsObjectService",
+            { useClass: MockMdnsObjectService },
+            { lifecycle: Lifecycle.Singleton }
+        ).register(
+            "IMdnsListenerService",
+            { useClass: MockMdnsListenerService }
+        ).register(
+            "IApiListenerService",
+            { useClass: MockApiListenerService }
+        )
+    });
 
     beforeEach(() => {
         jest.resetAllMocks();
@@ -23,13 +39,11 @@ describe("WebcamStatusServerMdnsApiListenerService", () => {
             }
         ) as jest.Mock);
         
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
+
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const mockMdnsListenerService = new MockMdnsListenerService(mockMdnsObjectService);
-        const mockApiListenerService = new MockApiListenerService();
-
-        const webcamService = new WebcamStatusServerMdnsApiListenerService(mockMdnsListenerService, mockApiListenerService);
+        const webcamService = container.resolve(WebcamStatusServerMdnsApiListenerService);
         mockMdnsObjectService.mockReady();
 
         const onChange = jest.fn();
@@ -52,13 +66,10 @@ describe("WebcamStatusServerMdnsApiListenerService", () => {
             }
         ) as jest.Mock);
 
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const mockMdnsListenerService = new MockMdnsListenerService(mockMdnsObjectService);
-        const mockApiListenerService = new MockApiListenerService();
-
-        const webcamService = new WebcamStatusServerMdnsApiListenerService(mockMdnsListenerService, mockApiListenerService);
+        const webcamService = container.resolve(WebcamStatusServerMdnsApiListenerService);
         mockMdnsObjectService.mockReady();
 
         const onChange = jest.fn();
@@ -100,13 +111,10 @@ describe("WebcamStatusServerMdnsApiListenerService", () => {
                 })
             }) as jest.Mock);
 
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const mockMdnsListenerService = new MockMdnsListenerService(mockMdnsObjectService);
-        const mockApiListenerService = new MockApiListenerService();
-
-        const webcamService = new WebcamStatusServerMdnsApiListenerService(mockMdnsListenerService, mockApiListenerService);
+        const webcamService = container.resolve(WebcamStatusServerMdnsApiListenerService);
         mockMdnsObjectService.mockReady();
 
         const onChange = jest.fn();
@@ -128,24 +136,18 @@ describe("WebcamStatusServerMdnsApiListenerService", () => {
     });
     
     it("should be able to stop", () => {
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const mockMdnsListenerService = new MockMdnsListenerService(mockMdnsObjectService);
-        const mockApiListenerService = new MockApiListenerService();
-
-        const webcamService = new WebcamStatusServerMdnsApiListenerService(mockMdnsListenerService, mockApiListenerService);
+        const webcamService = container.resolve(WebcamStatusServerMdnsApiListenerService);
         mockMdnsObjectService.mockReady();
 
         expect(() => webcamService.stopListening()).not.toThrow();
     });
 
     it("should be able to queue starting before being ready", async () => {
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const mockMdnsListenerService = new MockMdnsListenerService(mockMdnsObjectService);
-        const mockApiListenerService = new MockApiListenerService();
-
-        const webcamService = new WebcamStatusServerMdnsApiListenerService(mockMdnsListenerService, mockApiListenerService);
+        const webcamService = container.resolve(WebcamStatusServerMdnsApiListenerService);
 
         const onChange = jest.fn();
         webcamService.listenForValueChanges(onChange, 1000);

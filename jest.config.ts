@@ -18,7 +18,9 @@ const config: Config = {
     '<rootDir>/packages/**/source/**/*.ts',
     '!<rootDir>/packages/common/source/mocks/**/*',
     '!<rootDir>/packages/watcher-cli/source/index.ts',
-    '!<rootDir>/packages/status-api/source/server.ts'
+    '!<rootDir>/packages/status-api/source/server.ts',
+    '!<rootDir>/packages/watcher-cli/source/ioc.config.ts',
+    '!<rootDir>/packages/status-api/source/ioc.config.ts'
   ],
   coverageReporters: [
     'json', 'lcov', 'html', 'text', 'text-summary'
@@ -55,7 +57,8 @@ const config: Config = {
         '<rootDir>/packages/watcher-cli/source/index.ts'
       ],
       coveragePathIgnorePatterns: [
-        '<rootDir>/packages/watcher-cli/source/index.ts'
+        '<rootDir>/packages/watcher-cli/source/index.ts',
+        '<rootDir>/packages/watcher-cli/source/ioc.config.ts'
       ]
     },
     {
@@ -71,7 +74,8 @@ const config: Config = {
         '<rootDir>/packages/status-api/dist'
       ],
       coveragePathIgnorePatterns: [
-        '<rootDir>/packages/status-api/source/server.ts'
+        '<rootDir>/packages/status-api/source/server.ts',
+        '<rootDir>/packages/status-api/source/ioc.config.ts'
       ]
     }
   ]

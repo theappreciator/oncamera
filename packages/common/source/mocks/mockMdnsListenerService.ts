@@ -2,14 +2,16 @@ import { TxtData } from "dns-packet";
 import { BaseMdnsListenerService, IMdnsListenerService, IMdnsObjectService } from "../services";
 import { mockMdnsServerTcpType } from "../mocks";
 import { MdnsDevice } from "../types";
+import { container, inject, injectable} from "tsyringe";
 
 
 
+@injectable()
 class MockMdnsListenerService extends BaseMdnsListenerService implements IMdnsListenerService {
 
-    public constructor(mdnsObject: IMdnsObjectService) {
+    public constructor(@inject("IMdnsObjectService") mdns: IMdnsObjectService) {
         super(
-            mdnsObject,
+            mdns,
             mockMdnsServerTcpType,
             "Mocked MDNS Listener Service"
         );

@@ -1,9 +1,19 @@
+import "reflect-metadata";
+import {container, Lifecycle} from "tsyringe";
 import { MockMdnsListenerService, MockMdnsObjectService, getMockResponse } from "../../source/mocks";
 import { flushPromises } from "../testingUtils";
 
 
 
 describe("MdnsListener", () => {        
+
+    beforeAll(() => {
+        container.register(
+            "IMdnsObjectService",
+            { useClass: MockMdnsObjectService },
+            { lifecycle: Lifecycle.Singleton }
+          );
+    });
 
     beforeEach(() => {
         jest.resetAllMocks();
@@ -16,9 +26,9 @@ describe("MdnsListener", () => {
     });
 
     it("Should make an instance", () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         mockedObjectService.mockReady();
 
         expect(listener).not.toBeUndefined();
@@ -27,9 +37,9 @@ describe("MdnsListener", () => {
     });
 
     it("Should be ready", () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         const onReady = jest.fn();
         listener.on("ready", onReady);
         mockedObjectService.mockReady();
@@ -39,9 +49,9 @@ describe("MdnsListener", () => {
     });
 
     it("Should be about to set connect event", () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         const onConnect = jest.fn();
         expect(() => listener.on("connected", onConnect)).not.toThrow();
 
@@ -49,9 +59,9 @@ describe("MdnsListener", () => {
     });
 
     it("Should be about to set disconnect event", () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         const onDisconnect = jest.fn();
         expect(() => listener.on("disconnected", onDisconnect)).not.toThrow();
 
@@ -59,9 +69,9 @@ describe("MdnsListener", () => {
     });
 
     it("Should be able to be stopped", async () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         mockedObjectService.mockReady();
 
         expect(() => listener.stopFindingInterval()).not.toThrow();
@@ -75,9 +85,9 @@ describe("MdnsListener", () => {
     });
 
     it("Should respond", async () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         mockedObjectService.mockReady();
 
         expect.assertions(2);
@@ -90,25 +100,24 @@ describe("MdnsListener", () => {
     });
 
     it("Should respond and run a heartbeat", async () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         mockedObjectService.mockReady();
 
-        expect.assertions(2);
         const mockPublisherReponse: any = getMockResponse();
         mockedObjectService.mockResponse(mockPublisherReponse);
         await flushPromises();
         jest.runOnlyPendingTimers();
-        expect(true).toBe(true);
+        expect(listener.devices.size).toEqual(1);
 
         expect(() => listener.destroy()).not.toThrow();
     });
 
     it("should query", () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         mockedObjectService.mockReady();
 
         expect(() => listener.findOnce()).not.toThrow();
@@ -117,9 +126,9 @@ describe("MdnsListener", () => {
     });
 
     it("should query on an interval", async () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const listener = new MockMdnsListenerService(mockedObjectService);
+        const listener = container.resolve(MockMdnsListenerService);
         mockedObjectService.mockReady();
         
         expect.assertions(3);

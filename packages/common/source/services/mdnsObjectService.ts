@@ -1,24 +1,21 @@
 import makeMdns, { MulticastDNS } from 'multicast-dns';
+import {injectable, singleton} from "tsyringe";
+
 
 
 export interface IMdnsObjectService {
     browser: makeMdns.MulticastDNS
 }
 
+@injectable()
 class BaseMdnsObjectService implements IMdnsObjectService  {
-
-    private static _instance: IMdnsObjectService;
 
     private mdnsBrowser: MulticastDNS;
 
-    private constructor() {
+    public constructor() {
         this.mdnsBrowser = makeMdns({
             loopback: false
         });
-    }
-
-    public static get Instance() {
-        return this._instance || (this._instance = new this());
     }
 
     public get browser() {

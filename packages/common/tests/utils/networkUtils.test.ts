@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import os from 'os';
 
 import { getIpAddress, getLocalHostnameDotLocal, getLocalHostnameDotLocalNormalized, getNetworkAddress } from "../../source";
