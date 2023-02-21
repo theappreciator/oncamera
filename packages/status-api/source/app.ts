@@ -1,15 +1,13 @@
 import express, {Express, Request, Response} from "express";
-import Persist from "./services/persistService";
-import { BaseMdnsObjectService, DataKeys } from '@oncamera/common';
-import { WebcamStatus, MdnsServiceTypes } from '@oncamera/common';
-import { StatusServerMdnsPublisherService } from "./services";
+import PersistService from "./services/persistService";
+import { WebcamStatus } from '@oncamera/common';
 import { PERSIST_STORE_KEY } from "./constants";
 import * as log4js from "log4js";
 const logger = log4js.getLogger();
 
 
 
-const persist = Persist.Instance;
+const persist = PersistService.Instance;
 
 const app: Express = express();
 const port = 9124;

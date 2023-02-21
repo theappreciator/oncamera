@@ -1,13 +1,15 @@
+import "reflect-metadata";
+import { container, Lifecycle } from "tsyringe";
 const request = require('supertest');
 import { PERSIST_STORE_KEY } from "../source/constants";
-import Persist from "../source/services/persistService";
+import PersistService from "../source/services/persistService";
 import { DataKeys, WebcamStatus } from '@oncamera/common';
 
 
 
 
 const app = require('../source/app');
-const persist = Persist.Instance;
+const persist = PersistService.Instance;
 
 describe('GET /', function() {
     it('should responds with Hello World', (done) => {

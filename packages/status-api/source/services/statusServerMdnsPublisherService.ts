@@ -1,16 +1,18 @@
 import { BaseMdnsPublisherService, DataKeys, IMdnsObjectService, IMdnsPublisherService, MdnsServiceTypes, WebcamStatus } from "@oncamera/common";
+import { inject, injectable } from "tsyringe";
 import { PERSIST_STORE_KEY } from "../constants";
 import Persist from "./persistService";
 
 
 
+@injectable()
 class StatusServerMdnsPublisherService extends BaseMdnsPublisherService implements IMdnsPublisherService {
 
     private persist: Persist;
 
-    public constructor(mdnsObject: IMdnsObjectService) {
+    public constructor(@inject("IMdnsObjectService") mdns: IMdnsObjectService) {
         super (
-            mdnsObject,
+            mdns,
             MdnsServiceTypes.webcamStatus,
             "Webcam Status Server",
         )

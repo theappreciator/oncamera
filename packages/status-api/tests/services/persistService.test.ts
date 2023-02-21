@@ -1,19 +1,19 @@
 import exp from "constants";
-import Persist from "../../source/services/persistService";
+import PersistService from "../../source/services/persistService";
 
 
-describe("PersistServer", () => {
+describe("PersistService", () => {
 
     describe("class setup", () => {
         it("should be able to instantiate", () => {
-            const persist = Persist.Instance;
+            const persist = PersistService.Instance;
             
             expect(persist).not.toBeUndefined();
         });
 
         it("should be a singleton", () => {
-            const persist1 = Persist.Instance;
-            const persist2 = Persist.Instance;
+            const persist1 = PersistService.Instance;
+            const persist2 = PersistService.Instance;
 
             expect(persist1).not.toBeUndefined();
             expect(persist1).toBe(persist2);
@@ -22,7 +22,7 @@ describe("PersistServer", () => {
 
     describe("class responsibilities", () => {
         it("should be able to return undefined for an unused key", () => {
-            const persist = Persist.Instance;
+            const persist = PersistService.Instance;
             const keyName = "doesnt_exist";
             const value = persist.retrieve(keyName);
             
@@ -30,7 +30,7 @@ describe("PersistServer", () => {
         });
 
         it("should be able to save to an unused keyname and retrieve from it", () => {
-            const persist = Persist.Instance;
+            const persist = PersistService.Instance;
             const keyName = "my_key";
             const expectedValue = "my_value";
             persist.save(keyName, expectedValue);
@@ -40,7 +40,7 @@ describe("PersistServer", () => {
         });
 
         it("should be able to overwrite a value for an existing keyname", () => {
-            const persist = Persist.Instance;
+            const persist = PersistService.Instance;
             const keyName = "existing_key";
             const initialValue = "another_value";
             const expectedValue = "something_new";
@@ -55,7 +55,7 @@ describe("PersistServer", () => {
         });
 
         it("should have case insensitive keys", () => {
-            const persist = Persist.Instance;
+            const persist = PersistService.Instance;
             const keyName1 = "KEY_NAME";
             const keyName2 = "KEY_name";
             const keyName3 = "key_name";
@@ -70,7 +70,7 @@ describe("PersistServer", () => {
         });
 
         it ("should have case sensitive values", () => {
-            const persist = Persist.Instance;
+            const persist = PersistService.Instance;
             const keyName = "case_sensitive_value_test";
             
             const value1 = "CASE";
@@ -85,7 +85,7 @@ describe("PersistServer", () => {
         })
 
         it ("should be able to clear all existing values", () => {
-            const persist = Persist.Instance;
+            const persist = PersistService.Instance;
             const keyName1 = "KEY_NAME";
             const keyName2 = "KEY_name";
             const keyName3 = "key_name";

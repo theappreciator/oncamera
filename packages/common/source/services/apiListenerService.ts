@@ -1,6 +1,7 @@
 import chalk from "chalk";
-import * as log4js from "log4js";
 import { MdnsDevice } from "../types";
+import { injectable } from "tsyringe";
+import * as log4js from "log4js";
 const logger = log4js.getLogger();
 
 

@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { getUrlFromDevice, getUrlFromLight, getUrlFromWebcamStatusServer, getDeviceDisplayName, MdnsDevice } from "../../source";
 
 const lightDevice: MdnsDevice = {

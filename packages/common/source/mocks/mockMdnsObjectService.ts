@@ -1,9 +1,11 @@
 import { Question } from "dns-packet";
 import { MulticastDNS, ResponseOutgoingPacket, ResponsePacket } from "multicast-dns";
 import { IMdnsObjectService } from "../services";
+import { injectable } from "tsyringe";
 
 
 
+@injectable()
 class MockMdnsObject implements IMdnsObjectService {
 
     private fakeBrowser: MulticastDNS;
@@ -27,6 +29,7 @@ class MockMdnsObject implements IMdnsObjectService {
                             break;
                         case "query":
                             this.onQuery = listener;
+                            break;
                         default:
                             break;
                     }

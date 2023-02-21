@@ -3,10 +3,12 @@ import { MdnsDevice } from '../types'
 import { getDeviceDisplayName, getNetworkAddress } from '../utils'
 import { IMdnsObjectService } from './mdnsObjectService';
 import { RecordType, SrvAnswer, StringAnswer, TxtAnswer, TxtData } from "dns-packet";
+import { container, inject } from "tsyringe";
 
 import * as log4js from "log4js";
-import { type } from 'os';
 const logger = log4js.getLogger();
+
+
 
 const WAIT_MDNS_READY_INTERVAL_MILLIS = 3000;
 const HEARTBEAT_INTERVAL_MILLIS = 5000;
@@ -26,8 +28,8 @@ export interface IMdnsListenerService {
 abstract class BaseMdnsListenerService implements IMdnsListenerService {
     private serviceName:string;
     private displayName: string;
-    private mdns: IMdnsObjectService;
 
+    private mdns: IMdnsObjectService;
     private connectedDevices;
     private findInterval?: NodeJS.Timeout;
     private isListening = false;
@@ -40,12 +42,12 @@ abstract class BaseMdnsListenerService implements IMdnsListenerService {
     protected onMdnsReady: () => Promise<void>;
 
     protected constructor(
-        mdnsObject: IMdnsObjectService,
+        mdns: IMdnsObjectService,
         serviceName: string,
         displayName: string
     ) {
-        this.mdns = mdnsObject;
-
+        this.mdns = mdns;
+        
         this.serviceName = serviceName;
         this.displayName = displayName;
         this.connectedDevices = new Map<string, MdnsDevice>();

@@ -40,8 +40,10 @@
     "log4js": "^6.7.1",
     "multicast-dns": "^7.2.5",
     "nodemon": "^2.0.20",
+    "reflect-metadata": "^0.1.13",
     "ts-mixer": "^6.0.3",
     "ts-node": "^10.9.1",
+    "tsyringe": "^4.7.0",
     "typescript": "^4.9.4"
   },
   "directories": {

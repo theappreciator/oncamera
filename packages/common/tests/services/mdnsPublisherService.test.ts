@@ -1,9 +1,19 @@
+import "reflect-metadata";
+import {container, Lifecycle} from "tsyringe";
 import { DataKeys, WebcamStatus, getMockQuery, MockMdnsPublisherService, MockMdnsObjectService } from "../../source";
 import { flushPromises } from "../testingUtils";
 
 
 
 describe("MdnsPublisher", () => {
+
+    beforeAll(() => {
+        container.register(
+            "IMdnsObjectService",
+            { useClass: MockMdnsObjectService },
+            { lifecycle: Lifecycle.Singleton }
+          );
+    });
 
     beforeEach(() => {
         jest.resetAllMocks();
@@ -16,9 +26,9 @@ describe("MdnsPublisher", () => {
     });
 
     it("Should make an instance", () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const publisher = new MockMdnsPublisherService(mockedObjectService);
+        const publisher = container.resolve(MockMdnsPublisherService);
         mockedObjectService.mockReady();
 
         expect(publisher).not.toBeUndefined();
@@ -27,10 +37,10 @@ describe("MdnsPublisher", () => {
     });
 
     it("Should be ready", () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
         expect.assertions(2);
-        const publisher = new MockMdnsPublisherService(mockedObjectService);
+        const publisher = container.resolve(MockMdnsPublisherService);
         mockedObjectService.mockReady();
         expect(true).toBe(true);
 
@@ -38,10 +48,10 @@ describe("MdnsPublisher", () => {
     });
 
     it("Should query", async () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
         expect.assertions(2);
-        const publisher = new MockMdnsPublisherService(mockedObjectService);
+        const publisher = container.resolve(MockMdnsPublisherService);
         mockedObjectService.mockReady();
 
         const mockListenerQuery: any = getMockQuery();
@@ -53,9 +63,9 @@ describe("MdnsPublisher", () => {
     });
 
     it ("Should broadcast", async () => {
-        const mockedObjectService = new MockMdnsObjectService();
+        const mockedObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
 
-        const publisher = new MockMdnsPublisherService(mockedObjectService);
+        const publisher = container.resolve(MockMdnsPublisherService);
         mockedObjectService.mockReady();
 
         expect.assertions(2);

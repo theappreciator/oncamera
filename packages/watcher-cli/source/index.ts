@@ -1,6 +1,10 @@
+import "reflect-metadata";
+import { container } from "tsyringe";
+import iocRegister from "./ioc.config";
+
 import { turnOnLights, turnOffLights } from './controllers/keylightController';
 import { ElgatoLightMdnsListenerService, WebcamStatusServerMdnsApiListenerService, WebcamStatusServerMdnsListenerService, WebcamStatusServerApiListenerService } from './services';
-import { BaseMdnsObjectService, WebcamStatus } from '@oncamera/common';
+import { WebcamStatus } from '@oncamera/common';
 
 import * as log4js from "log4js";
 log4js.configure({
@@ -8,13 +12,13 @@ log4js.configure({
   categories: { default: { appenders: ["normal"], level: "info" } },
 });
 
+
+
+iocRegister();
+
 const WEBCAM_LISTEN_INTERVAL_MILLIS = 1000;
 
-const mdnsObjectService = BaseMdnsObjectService.Instance;
-const webcamApiListenerService = new WebcamStatusServerApiListenerService();
-const webcamMdnsListenerService = new WebcamStatusServerMdnsListenerService(mdnsObjectService);
-
-const elgatoLightService = new ElgatoLightMdnsListenerService(mdnsObjectService);
+const elgatoLightService = container.resolve(ElgatoLightMdnsListenerService);
 elgatoLightService.findAndUpdateOnInterval(5000);
 
 const onChange = async (status: string) => {
@@ -27,5 +31,5 @@ const onChange = async (status: string) => {
 }
 
 // be sure to send back a version number
-const webcamStatusServerService = new WebcamStatusServerMdnsApiListenerService(webcamMdnsListenerService, webcamApiListenerService);
+const webcamStatusServerService: WebcamStatusServerMdnsApiListenerService = container.resolve("IMdnsApiListenerService");
 webcamStatusServerService.listenForValueChanges(onChange, WEBCAM_LISTEN_INTERVAL_MILLIS);

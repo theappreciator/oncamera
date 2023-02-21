@@ -1,15 +1,17 @@
 import { BaseMdnsPublisherService, IMdnsObjectService, IMdnsPublisherService } from "../services";
 import { mockMdnsServerTcpType } from "./mockTypes";
+import { inject, injectable} from "tsyringe";
 
 
 
+@injectable()
 class MockMdnsPublisherService extends BaseMdnsPublisherService implements IMdnsPublisherService {
 
-    public constructor(mdnsObject: IMdnsObjectService) {
+    public constructor(@inject("IMdnsObjectService") mdns: IMdnsObjectService,) {
         super(
-            mdnsObject,
+            mdns,
             mockMdnsServerTcpType,
-            "Mocked MDNS Listener Service"
+            "Mocked MDNS Listener Service",
         );
     }
 

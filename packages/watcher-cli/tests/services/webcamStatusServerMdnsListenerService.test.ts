@@ -1,3 +1,5 @@
+import "reflect-metadata";
+import { container, Lifecycle } from "tsyringe";
 import { getMockResponse, MdnsServiceTypes, MockMdnsObjectService, mockNotJsonResponse, mockNotWebcamResponse, mockWebcamOnlineResponse } from "@oncamera/common";
 import { WebcamStatusServerMdnsListenerService } from "../../source/services";
 import { flushPromises } from "../testingUtils";
@@ -5,6 +7,15 @@ import { flushPromises } from "../testingUtils";
 
 
 describe("WebcamStatusServerMdnsListenerService", () => {
+
+    beforeAll(() => {
+        container.register(
+            "IMdnsObjectService",
+            { useClass: MockMdnsObjectService },
+            { lifecycle: Lifecycle.Singleton }
+        );
+    });
+
     beforeEach(() => {
         jest.resetAllMocks();
         jest.clearAllTimers();
@@ -16,10 +27,10 @@ describe("WebcamStatusServerMdnsListenerService", () => {
     });
 
     it("should find on an interval once", async () => {
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new WebcamStatusServerMdnsListenerService(mockMdnsObjectService);
+        const webcamListenerService = container.resolve(WebcamStatusServerMdnsListenerService);
         mockMdnsObjectService.mockReady();
 
         webcamListenerService.findAndUpdateOnInterval(1000);
@@ -31,10 +42,10 @@ describe("WebcamStatusServerMdnsListenerService", () => {
     });
 
     it("should find on an interval twice", async () => {
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new WebcamStatusServerMdnsListenerService(mockMdnsObjectService);
+        const webcamListenerService = container.resolve(WebcamStatusServerMdnsListenerService);
         mockMdnsObjectService.mockReady();
 
         webcamListenerService.findAndUpdateOnInterval(1000);
@@ -58,10 +69,10 @@ describe("WebcamStatusServerMdnsListenerService", () => {
                 }
             ) as jest.Mock);
             
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new WebcamStatusServerMdnsListenerService(mockMdnsObjectService);
+        const webcamListenerService = container.resolve(WebcamStatusServerMdnsListenerService);
         const onConnected = jest.fn();
         webcamListenerService.on("connected", onConnected);
         mockMdnsObjectService.mockReady();
@@ -93,10 +104,10 @@ describe("WebcamStatusServerMdnsListenerService", () => {
         
         jest.useFakeTimers();
             
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new WebcamStatusServerMdnsListenerService(mockMdnsObjectService);
+        const webcamListenerService = container.resolve(WebcamStatusServerMdnsListenerService);
         const onConnected = jest.fn();
         const onDisconnected = jest.fn();
         const onReady = jest.fn();
@@ -129,10 +140,10 @@ describe("WebcamStatusServerMdnsListenerService", () => {
                 }
             ) as jest.Mock);
             
-        const mockMdnsObjectService = new MockMdnsObjectService();
+        const mockMdnsObjectService: MockMdnsObjectService = container.resolve("IMdnsObjectService");
         const spyQuery = jest.spyOn(mockMdnsObjectService.browser, "query");
 
-        const webcamListenerService = new WebcamStatusServerMdnsListenerService(mockMdnsObjectService);
+        const webcamListenerService = container.resolve(WebcamStatusServerMdnsListenerService);
         const onConnected = jest.fn();
         const onDisconnected = jest.fn();
         webcamListenerService.on("connected", onConnected);

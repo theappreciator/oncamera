@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { MdnsDevice } from "@oncamera/common";
 import { turnOnLights, turnOffLights, flashLight } from "../../source/controllers/keylightController";
 import { ElgatoKeyLightResponse } from "../../source/types";

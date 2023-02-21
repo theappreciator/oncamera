@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { IMdnsObjectService } from './mdnsObjectService';
 import { getIpAddress, getLocalHostnameDotLocal, getLocalHostnameDotLocalNormalized } from '../utils';
 import { Answer } from "dns-packet";
+import { container, inject, injectable } from "tsyringe";
 
 import * as log4js from "log4js";
 const logger = log4js.getLogger();
@@ -12,17 +13,18 @@ export interface IMdnsPublisherService {
 }
 
 abstract class BaseMdnsPublisherService implements IMdnsPublisherService {
+    private mdns?: IMdnsObjectService;
+
     private serviceName:string;
     private displayName: string;
-    private mdns: IMdnsObjectService;
     private isReady = false;
 
     public constructor(
-        mdnsObject: IMdnsObjectService,
+        mdns: IMdnsObjectService,
         serviceName: string,
-        displayName: string
+        displayName: string,
     ) {
-        this.mdns = mdnsObject;
+        this.mdns = mdns;
 
         this.serviceName = serviceName;
         this.displayName = displayName;
@@ -34,11 +36,11 @@ abstract class BaseMdnsPublisherService implements IMdnsPublisherService {
     protected abstract getData(): string[];
 
     public destroy() {        
-        this.mdns.browser.destroy();
+        this.mdns?.browser.destroy();
     }
 
     private setOnQuery() {
-        this.mdns.browser.on("query", (query) => {
+        this.mdns?.browser.on("query", (query) => {
             const matchedQuery = query.questions.find(q => q.name === this.serviceName && q.type === 'PTR');
 
             if (matchedQuery) {
@@ -102,7 +104,7 @@ abstract class BaseMdnsPublisherService implements IMdnsPublisherService {
                 additionals
             }
 
-            this.mdns.browser.respond(
+            this.mdns?.browser.respond(
                 returnObj,
                 callback
             );
@@ -123,7 +125,7 @@ abstract class BaseMdnsPublisherService implements IMdnsPublisherService {
     }
 
     private setOnReady(browserName: string) {
-        this.mdns.browser.on("ready", () => {
+        this.mdns?.browser.on("ready", () => {
             logger.info(chalk.bgGreen.black.bold(`${browserName} MDNS Service Publisher ready`));
             
             this.isReady = true;
