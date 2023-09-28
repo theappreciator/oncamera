@@ -86,11 +86,6 @@ describe("PersistService", () => {
 
         it ("should be able to clear all existing values", () => {
             const persist = PersistService.Instance;
-            const keyName1 = "KEY_NAME";
-            const keyName2 = "KEY_name";
-            const keyName3 = "key_name";
-
-            const value = "case insensitive value";
 
             for (let i = 1; i <= 10; i++) {
                 const key = "key" + i.toString();
@@ -105,7 +100,21 @@ describe("PersistService", () => {
 
             expect(persist.retrieve("key1")).toBeUndefined();
             expect(persist.retrieve("key10")).toBeUndefined();
-        })
+        });
+
+        it ('should be able to clear a single vlaue', () => {
+            const persist = PersistService.Instance;
+            const keyName = "KEY_NAME";
+            const value = "case insensitive value";
+
+            persist.save(keyName, value);
+
+            expect(persist.retrieve(keyName)).toEqual(value);
+
+            persist.clear(keyName);
+
+            expect(persist.retrieve(keyName)).toBeUndefined();
+        });
 
     });
 })

@@ -42,13 +42,21 @@ app.post("/api/webcam/status", (req: Request, res: Response) => {
         const transitioningTimeout = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
         logger.info(`Status - old: ${oldStatus} new: ${newStatus} transitioning: ${transitioningTimeout !== undefined}`);
 
+        // check previous transitions
+        if ((oldStatus === WebcamStatus.online && newStatus === WebcamStatus.online) ||
+            (oldStatus === WebcamStatus.online && newStatus === WebcamStatus.offline) ||
+            (oldStatus === WebcamStatus.offline && newStatus === WebcamStatus.online)
+            ) {
+            if (transitioningTimeout) {
+                logger.info(`Clearing previous transition: ${transitioningTimeout}`);
+                clearTimeout(transitioningTimeout);
+                persist.clear(PERSIST_STORE_TRANSITIONING_KEY);
+            }
+        }
+
+        // actually change the status
         if (oldStatus !== newStatus) {
             if (newStatus === WebcamStatus.offline) {
-                if (transitioningTimeout) {
-                    logger.info(`Clearing previous transition: ${transitioningTimeout}`);
-                    clearTimeout(transitioningTimeout);
-                }
-
                 logger.info(`Transitioning status to ${newStatus} in ${TRANSITIONING_TIME_MILLIS}ms`);
                 const timeout = setTimeout(() => {
                     saveStatus(newStatus);
