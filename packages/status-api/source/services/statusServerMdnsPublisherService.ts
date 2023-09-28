@@ -1,6 +1,6 @@
 import { BaseMdnsPublisherService, DataKeys, IMdnsObjectService, IMdnsPublisherService, MdnsServiceTypes, WebcamStatus } from "@oncamera/common";
 import { inject, injectable } from "tsyringe";
-import { PERSIST_STORE_KEY } from "../constants";
+import { PERSIST_STORE_STATUS_KEY } from "../constants";
 import Persist from "./persistService";
 
 
@@ -22,7 +22,7 @@ class StatusServerMdnsPublisherService extends BaseMdnsPublisherService implemen
 
     protected getData(): string[] {
         const data = [];
-        const status = this.persist.retrieve(PERSIST_STORE_KEY) || WebcamStatus.offline;
+        const status = this.persist.retrieve(PERSIST_STORE_STATUS_KEY) || WebcamStatus.offline;
         if (status) {
             data.push(DataKeys.webcamStatus + "=" + status);
         }
