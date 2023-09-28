@@ -22,6 +22,10 @@ class PersistService {
         return this.store.get(key.toLowerCase());
     }
 
+    public clear(key: string) {
+        this.store.delete(key.toLowerCase());
+    }
+
     public clearAll() {
         this.store.clear();
     }
