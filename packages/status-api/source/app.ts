@@ -13,13 +13,23 @@ const app: Express = express();
 const port = 9124;
 
 const saveStatus = (status: WebcamStatus) => {
+    const previousTransitioningTimerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
     persist.save(PERSIST_STORE_STATUS_KEY, status);
     logger.info(`Saved new status: ${persist.retrieve(PERSIST_STORE_STATUS_KEY)}`);
+    cancelTransition(previousTransitioningTimerId);
 
     // TODO troublehsoot the following
     // 1) why this isn't always recieved on the listener
     // 2) why this is sometimes received several seconds later on the listener
     // publisher.broadcastEvent([DataKeys.webcamStatus + "=" + newStatus]);
+}
+
+const cancelTransition = (transitionId: string | undefined) => {
+    logger.info(`Clearing previous transition: ${transitionId}`);
+    if (transitionId) {
+        clearTimeout(transitionId);
+    }
+    persist.clear(PERSIST_STORE_TRANSITIONING_KEY);
 }
 
 app.use(express.json());       // to support JSON-encoded bodies
@@ -47,11 +57,7 @@ app.post("/api/webcam/status", (req: Request, res: Response) => {
             (oldStatus === WebcamStatus.online && newStatus === WebcamStatus.offline) ||
             (oldStatus === WebcamStatus.offline && newStatus === WebcamStatus.online)
             ) {
-            if (transitioningTimeout) {
-                logger.info(`Clearing previous transition: ${transitioningTimeout}`);
-                clearTimeout(transitioningTimeout);
-                persist.clear(PERSIST_STORE_TRANSITIONING_KEY);
-            }
+            cancelTransition(transitioningTimeout);
         }
 
         // actually change the status
