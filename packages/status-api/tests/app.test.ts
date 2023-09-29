@@ -1,15 +1,46 @@
 import "reflect-metadata";
-import { container, Lifecycle } from "tsyringe";
 const request = require('supertest');
 import { PERSIST_STORE_STATUS_KEY, PERSIST_STORE_TRANSITIONING_KEY, TRANSITIONING_TIME_MILLIS } from "../source/constants";
 import PersistService from "../source/services/persistService";
-import { DataKeys, WebcamStatus } from '@oncamera/common';
-
-
-
+import { WebcamStatus } from '@oncamera/common';
 
 const app = require('../source/app');
 const persist = PersistService.Instance;
+
+const helperAdvanceTimersByAlmostFullTime = () => {
+  jest.advanceTimersByTime(Math.floor(TRANSITIONING_TIME_MILLIS - 1));
+}
+
+const helperTransitioningToOfflineStatus = async (previousTimerId: string, clearTimeoutSpy: jest.SpyInstance<void, [timeoutId: string | number | NodeJS.Timeout | undefined], any>) => {
+  // const previousTimerId = '123456';
+  persist.save(PERSIST_STORE_STATUS_KEY, WebcamStatus.online);
+  persist.save(PERSIST_STORE_TRANSITIONING_KEY, previousTimerId);
+  
+  // jest.useFakeTimers();
+
+  // const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
+
+  await request(app)
+    .post('/api/webcam/status')
+    .send('status=' + WebcamStatus.offline)
+    .expect(200, {
+      status: WebcamStatus.online
+    });
+
+  expect(clearTimeoutSpy).toHaveBeenCalledWith(previousTimerId);
+
+  const timerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+  expect(timerId).not.toBe(previousTimerId);
+  expect(timerId).not.toBeUndefined();
+
+  helperAdvanceTimersByAlmostFullTime();
+
+  const transitioningStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
+  expect(transitioningStatus).toBe(WebcamStatus.online);
+
+  return timerId;
+}
+
 
 describe('base App', function() {
     it('should responds with Hello World', (done) => {
@@ -111,32 +142,47 @@ describe('base App', function() {
         }, done);
     });
 
-    it('should be able to update status from online->offline, not already transitioning', async () => {
+    it('should be able to update status from online->online, not already transitioning', async () => {
       persist.save(PERSIST_STORE_STATUS_KEY, WebcamStatus.online);
+      persist.clear(PERSIST_STORE_TRANSITIONING_KEY);
       
       jest.useFakeTimers();
 
       await request(app)
         .post('/api/webcam/status')
-        .send('status=' + WebcamStatus.offline)
+        .send('status=' + WebcamStatus.online)
         .expect(200, {
           status: WebcamStatus.online
         });
-      
-      jest.advanceTimersByTime(TRANSITIONING_TIME_MILLIS + 1);
 
-      const status = persist.retrieve(PERSIST_STORE_STATUS_KEY);
-      expect(status).toBe(WebcamStatus.offline);
+      const transitioningTimerId1 = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(transitioningTimerId1).toBeUndefined();
+
+      const transitioningStatus1 = persist.retrieve(PERSIST_STORE_STATUS_KEY);
+      expect(transitioningStatus1).toBe(WebcamStatus.online);
+
+      helperAdvanceTimersByAlmostFullTime();
+
+      const transitioningTimerId2 = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(transitioningTimerId2).toBeUndefined();
+
+      const transitioningStatus2 = persist.retrieve(PERSIST_STORE_STATUS_KEY);
+      expect(transitioningStatus2).toBe(WebcamStatus.online);
+
+      jest.advanceTimersByTime(2);
+
+      const transitioningTimerId3 = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(transitioningTimerId3).toBeUndefined();
+
+      const transitioningStatus3 = persist.retrieve(PERSIST_STORE_STATUS_KEY);
+      expect(transitioningStatus3).toBe(WebcamStatus.online);
     });
 
-    it('should be able to update status from online->offline, already transitioning', async () => {
-      const previousTimerId = '123456';
+    it('should be able to update status from online->offline, not already transitioning', async () => {
       persist.save(PERSIST_STORE_STATUS_KEY, WebcamStatus.online);
-      persist.save(PERSIST_STORE_TRANSITIONING_KEY, previousTimerId);
+      persist.clear(PERSIST_STORE_TRANSITIONING_KEY);
       
       jest.useFakeTimers();
-
-      const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
 
       await request(app)
         .post('/api/webcam/status')
@@ -145,49 +191,37 @@ describe('base App', function() {
           status: WebcamStatus.online
         });
 
-      expect(clearTimeoutSpy).toHaveBeenCalledWith(previousTimerId);
+      const transitioningTimerId1 = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(transitioningTimerId1).not.toBeUndefined();
 
-      const timerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
-      expect(timerId).not.toBe(previousTimerId);
-      expect(timerId).not.toBeUndefined();
+      const transitioningStatus1 = persist.retrieve(PERSIST_STORE_STATUS_KEY);
+      expect(transitioningStatus1).toBe(WebcamStatus.online);
 
-      jest.advanceTimersByTime(TRANSITIONING_TIME_MILLIS - 1);
+      helperAdvanceTimersByAlmostFullTime();
 
-      const transitioningStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
-      expect(transitioningStatus).toBe(WebcamStatus.online);
+      const transitioningTimerId2 = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(transitioningTimerId2).toBe(transitioningTimerId1);
 
-      jest.advanceTimersByTime(TRANSITIONING_TIME_MILLIS + 1);
+      const transitioningStatus2 = persist.retrieve(PERSIST_STORE_STATUS_KEY);
+      expect(transitioningStatus2).toBe(WebcamStatus.online);
 
-      const finalStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
-      expect(finalStatus).toBe(WebcamStatus.offline);
+      jest.advanceTimersByTime(2);
+
+      const transitioningTimerId3 = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(transitioningTimerId3).toBeUndefined();
+
+      const transitioningStatus3 = persist.retrieve(PERSIST_STORE_STATUS_KEY);
+      expect(transitioningStatus3).toBe(WebcamStatus.offline);
     });
 
     it('should be able to update status from online->offline, already transitioning, multiple requests', async () => {
-      const previousTimerId = '123456';
-      persist.save(PERSIST_STORE_STATUS_KEY, WebcamStatus.online);
-      persist.save(PERSIST_STORE_TRANSITIONING_KEY, previousTimerId);
+      const beginTimerId = '123456';
       
       jest.useFakeTimers();
 
       const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
 
-      await request(app)
-        .post('/api/webcam/status')
-        .send('status=' + WebcamStatus.offline)
-        .expect(200, {
-          status: WebcamStatus.online
-        });
-
-      expect(clearTimeoutSpy).toHaveBeenCalledWith(previousTimerId);
-
-      const firstRequestTimerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
-      expect(firstRequestTimerId).not.toBe(previousTimerId);
-      expect(firstRequestTimerId).not.toBeUndefined();
-
-      jest.advanceTimersByTime(Math.floor(TRANSITIONING_TIME_MILLIS - 100));
-
-      const firstRequestTransitioningStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
-      expect(firstRequestTransitioningStatus).toBe(WebcamStatus.online);
+      const beginTransitioningTimerId = await helperTransitioningToOfflineStatus(beginTimerId, clearTimeoutSpy);
 
       await request(app)
         .post('/api/webcam/status')
@@ -196,13 +230,13 @@ describe('base App', function() {
           status: WebcamStatus.online
         });
       
-      expect(clearTimeoutSpy).toHaveBeenCalledWith(firstRequestTimerId);
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(beginTransitioningTimerId);
 
-      const secondRequestTimerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
-      expect(secondRequestTimerId).not.toBe(firstRequestTimerId);
-      expect(secondRequestTimerId).not.toBeUndefined();
+      const secondOfflineTransitionTimerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(secondOfflineTransitionTimerId).not.toBe(beginTransitioningTimerId);
+      expect(secondOfflineTransitionTimerId).not.toBeUndefined();
 
-      jest.advanceTimersByTime(Math.floor(TRANSITIONING_TIME_MILLIS - 100));
+      helperAdvanceTimersByAlmostFullTime();
 
       const secondRequestTransitioningStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
       expect(secondRequestTransitioningStatus).toBe(WebcamStatus.online);
@@ -211,34 +245,19 @@ describe('base App', function() {
 
       const finalStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
       expect(finalStatus).toBe(WebcamStatus.offline);
+
+      const finalTransitioningId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(finalTransitioningId).toBeUndefined();
     });
 
-    it('should be able to update status from online->online, when already transitioning to offline', async () => {
-      const previousTimerId = '123456';
-      persist.save(PERSIST_STORE_STATUS_KEY, WebcamStatus.online);
-      persist.save(PERSIST_STORE_TRANSITIONING_KEY, previousTimerId);
+    it('should be able to update status from online->online, already transitioning, multiple requests', async () => {
+      const beginTimerId = '123456';
       
       jest.useFakeTimers();
 
       const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
 
-      await request(app)
-        .post('/api/webcam/status')
-        .send('status=' + WebcamStatus.offline)
-        .expect(200, {
-          status: WebcamStatus.online
-        });
-
-      expect(clearTimeoutSpy).toHaveBeenCalledWith(previousTimerId);
-
-      const firstRequestTimerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
-      expect(firstRequestTimerId).not.toBe(previousTimerId);
-      expect(firstRequestTimerId).not.toBeUndefined();
-
-      jest.advanceTimersByTime(Math.floor(TRANSITIONING_TIME_MILLIS - 100));
-
-      const midStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
-      expect(midStatus).toBe(WebcamStatus.online);
+      const beginTransitioningTimerId = await helperTransitioningToOfflineStatus(beginTimerId, clearTimeoutSpy);
 
       await request(app)
         .post('/api/webcam/status')
@@ -247,15 +266,21 @@ describe('base App', function() {
           status: WebcamStatus.online
         });
       
-      expect(clearTimeoutSpy).toHaveBeenCalledWith(firstRequestTimerId);
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(beginTransitioningTimerId);
 
-      const secondRequestTimerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
-      expect(secondRequestTimerId).toBeUndefined();
+      const secondOfflineTransitionTimerId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(secondOfflineTransitionTimerId).toBeUndefined();
+
+      const secondRequestTransitioningStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
+      expect(secondRequestTransitioningStatus).toBe(WebcamStatus.online);
 
       jest.advanceTimersByTime(TRANSITIONING_TIME_MILLIS + 1);
 
       const finalStatus = persist.retrieve(PERSIST_STORE_STATUS_KEY);
       expect(finalStatus).toBe(WebcamStatus.online);
+
+      const finalTransitioningId = persist.retrieve(PERSIST_STORE_TRANSITIONING_KEY);
+      expect(finalTransitioningId).toBeUndefined();
     });
 
     afterAll(() => {
